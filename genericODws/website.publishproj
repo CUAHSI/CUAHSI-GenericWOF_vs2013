@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+***********************************************************************************************
+website.publishproj
+
+WARNING: DO NOT MODIFY this file, it is used for the web publish process.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+***********************************************************************************************
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.30319</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{adfa2796-7281-42b6-8a36-a4c00b9b7951}</ProjectGuid>
+    <SourceWebPhysicalPath>$(MSBuildThisFileDirectory)</SourceWebPhysicalPath>
+    <SourceWebVirtualPath>/genericODws</SourceWebVirtualPath>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <SourceWebProject>C:\CODELIB\hydroserver-73826\HydroServer\WaterOneFlow\GenericOdWs_vs2010\genericODws</SourceWebProject>
+    <SourceWebMetabasePath>/IISExpress/7.5/LM/W3SVC/17/ROOT</SourceWebMetabasePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <!-- for VS2010 we need to use 10.5 but for VS2012+ we should use VisualStudioVersion -->
+    <WebPublishTargetsVersion Condition=" '$(WebPublishTargetsVersion)' =='' and '$(VisualStudioVersion)' == 10.0 ">10.5</WebPublishTargetsVersion>
+    <WebPublishTargetsVersion Condition=" '$(WebPublishTargetsVersion)'=='' ">$(VisualStudioVersion)</WebPublishTargetsVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(WebPublishTargetsVersion)</VSToolsPath>
+    <_WebPublishTargetsPath Condition=" '$(_WebPublishTargetsPath)'=='' ">$(VSToolsPath)</_WebPublishTargetsPath>
+    <AssemblyFileVersion Condition="'$(AssemblyFileVersion)' == ''">1.0.0.0</AssemblyFileVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttributes Include="AssemblyFileVersion">
+      <Value>$(AssemblyFileVersion)</Value>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyVersion">
+      <Value>$(AssemblyVersion)</Value>
+    </AssemblyAttributes>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodeRewriter\CodeRewriter.csproj">
+      <Project>{79C351EE-392B-474E-B182-E75D558A4EB7}</Project>
+      <Name>CodeRewriter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODM1_0_Datasets\ODM1_0_Datasets.csproj">
+      <Project>{7CC3CBAF-84AA-4C14-95A8-926C92580F3E}</Project>
+      <Name>ODM1_0_Datasets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODM1_1_Datasets\ODM1_1_Datasets.csproj">
+      <Project>{5EEAEAA9-A624-4C68-A6B9-250AF448DE4B}</Project>
+      <Name>ODM1_1_Datasets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\waterOneFlowImpl\waterOneFlowImpl.csproj">
+      <Project>{533D0719-6D5F-4F02-BD8C-B3D829E9DEB2}</Project>
+      <Name>waterOneFlowImpl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WofAuthentication\WofAuthentication.csproj">
+      <Project>{32144077-B780-491E-B0F4-EA29440B056B}</Project>
+      <Name>WofAuthentication</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(_WebPublishTargetsPath)\Web\Microsoft.WebSite.Publishing.targets" />
+</Project>
