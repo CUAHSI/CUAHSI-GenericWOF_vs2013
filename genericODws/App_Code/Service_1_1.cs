@@ -179,6 +179,7 @@ namespace WaterOneFlow.odws
                 string siteCd = partsLocation[1];
                 string varCd = partsVariable[1];
 
+                //sample data
                 //location  LBR:NWISDV|00003
                 //varaible  LBR:NWISDV|00003|DataType=MAXIMUM
                 if (siteCd.StartsWith("NWIS", StringComparison.InvariantCultureIgnoreCase))
@@ -197,14 +198,12 @@ namespace WaterOneFlow.odws
                         log.Warn(e.Message);
                     }
 
-
-                    statCd = "00001"; 
+                    //Select from [USGSDataType] table
+                    statCd = UsgsDataType.GetStatCd(paramValidator.statName); 
                     UsgsValues usgsDV = new UsgsValues(
                         endpoint,
                         paramValidator.siteCd, paramValidator.varCd, statCd,
                         paramValidator.startDateField, paramValidator.endDateField);
-
-                    string s = paramValidator.statName;
 
                     try
                     {
