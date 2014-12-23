@@ -43,7 +43,7 @@ namespace WaterOneFlow.Utilities
                 r.Add(':', '-');// colon to dash
                 r.Add('/', '-');//slash to dash
                 r.Add('\\', '-');//slash(escaped) to dash
-               r.Add('=', '-');//equals to dash
+                //r.Add('=', '-');//equals to dash
                 r.Add('+', '.');//plus to  dot
                 // if you add a value, add do documentation.
 

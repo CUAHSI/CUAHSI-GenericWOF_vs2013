@@ -17,6 +17,7 @@ using Microsoft.Web.Services3.Addressing;
 using Microsoft.Web.Services3.Messaging;
 using WaterOneFlowImpl.geom;
 
+using USGSTranducer;
 
 namespace WaterOneFlow.odws
 {
@@ -171,8 +172,58 @@ namespace WaterOneFlow.odws
 
             public virtual string GetValues( string location, string variable,  string startDate, string endDate, String authToken)
             {
-                TimeSeriesResponseType aSite = GetValuesObject(location, variable, startDate, endDate, null);
-                return WSUtils.ConvertToXml(aSite, typeof(TimeSeriesResponseType));
+                String responseNwis = null;
+                char separator = ':';
+                string[] partsLocation = location.Split(separator);
+                string[] partsVariable = variable.Split(separator);
+                string siteCd = partsLocation[1];
+                string varCd = partsVariable[1];
+
+                //sample data
+                //location  LBR:NWISDV|00003
+                //varaible  LBR:NWISDV|00003|DataType=MAXIMUM
+                if (siteCd.StartsWith("NWIS", StringComparison.InvariantCultureIgnoreCase))
+                {
+
+                    string statCd = null;
+                    string endpoint = @"http://waterservices.usgs.gov/nwis/dv/";
+
+                    UsgsParamValidator paramValidator = new UsgsParamValidator(location, variable, startDate, endDate);
+                    try
+                    {
+                        paramValidator.Validate();
+                    }
+                    catch (ArgumentException e) 
+                    {
+                        log.Warn(e.Message);
+                    }
+
+                    //Select from [USGSDataType] table
+                    statCd = UsgsDataType.GetStatCd(paramValidator.statName); 
+                    UsgsValues usgsDV = new UsgsValues(
+                        endpoint,
+                        paramValidator.siteCd, paramValidator.varCd, statCd,
+                        paramValidator.startDateField, paramValidator.endDateField);
+
+                    try
+                    {
+                        responseNwis = usgsDV.GetValues();
+                    }
+                    catch (Exception We)
+                    {
+                        log.Warn(We.Message);
+                    }
+
+                    return WSUtils.ConvertToXml(responseNwis, typeof(String));
+
+                }
+                else
+                {
+                    TimeSeriesResponseType aSite = GetValuesObject(location, variable, startDate, endDate, null);
+                    return WSUtils.ConvertToXml(aSite, typeof(TimeSeriesResponseType));
+
+                }
+
             }
 
             public virtual TimeSeriesResponseType GetValuesObject( string location, string variable, string startDate,  string endDate, String authToken)
@@ -180,6 +231,7 @@ namespace WaterOneFlow.odws
                 GlobalClass.WaterAuth.DataValuesServiceAllowed(Context, authToken);
                 
                 if (!useODForValues) throw new SoapException("GetValues implemented external to this service. Call GetSiteInfo, and SeriesCatalog includes the service Wsdl for GetValues. Attribute:serviceWsdl on Element:seriesCatalog XPath://seriesCatalog/[@serviceWsdl]", new XmlQualifiedName("ServiceException"));
+
 
                 try
                 {
