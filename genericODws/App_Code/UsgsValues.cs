@@ -37,8 +37,8 @@ namespace USGSTranducer
                     "?site=" + siteCd +
                     "&parameterCd=" + varCd +
                     "&statCd=" + statCd +
-                    "&startDT=" + startDate +
-                    "&endDT=" + endDate);
+                    "&startDT=" + startDate.Substring(0,10) +
+                    "&endDT=" + endDate.Substring(0, 10));
             }
             catch (Exception e)
             {

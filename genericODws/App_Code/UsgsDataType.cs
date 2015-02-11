@@ -32,6 +32,7 @@ namespace USGSTranducer
             //Yaping Notes
             //Without commenting out this line, there is compile error. not sure why?
             //dtTableAdapter.Connection.ConnectionString = WaterOneFlow.odws.v1_1.Config.ODDB();
+            //dtTableAdapter.Connection.ConnectionString = Config.ODDB();
 
             try
             {
