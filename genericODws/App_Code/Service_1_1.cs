@@ -220,7 +220,8 @@ namespace WaterOneFlow.odws
                     if (useUSGSForValues)
                     {
                         TimeSeriesResponseType model = null;
-                        string responseNwisXml = USGSws.GetValues(location, variable, startDate, endDate);
+                        //string responseNwisXml = USGSws.GetValues(location, variable, startDate, endDate);
+                        string responseNwisXml = HttpUtility.HtmlDecode( USGSws.GetValues(location, variable, startDate, endDate));
 
 
                         //Yaping 
@@ -247,11 +248,25 @@ namespace WaterOneFlow.odws
                                               siteCode =  (from t in o.Descendants(ns1 + "siteCode")
                                                           select new SiteInfoTypeSiteCode[] {
                                                             new SiteInfoTypeSiteCode(){
-                                                            network = t.Attribute("network").Value,
+                                                            //network = t.Attribute("network").Value,
+                                                            network = "NWISDV",
                                                             agencyCode = t.Attribute("agencyCode").Value,
                                                             Value = t.Value
                                                             }}
                                                           ).FirstOrDefault(),
+
+                                              timeZoneInfo = (from t in o.Descendants(ns1 + "timeZoneInfo")
+                                                              select new SiteInfoTypeTimeZoneInfo() {
+                                                                  siteUsesDaylightSavingsTime = bool.Parse(t.Attribute("siteUsesDaylightSavingsTime").Value),
+                                                                  defaultTimeZone = new SiteInfoTypeTimeZoneInfoDefaultTimeZone() {
+                                                                      zoneOffset = t.Element(ns1 + "defaultTimeZone").Attribute("zoneOffset").Value,
+                                                                      zoneAbbreviation = t.Element(ns1+ "defaultTimeZone").Attribute("zoneAbbreviation").Value
+                                                                  },
+                                                                  daylightSavingsTimeZone = new SiteInfoTypeTimeZoneInfoDaylightSavingsTimeZone() {
+                                                                      zoneOffset = t.Element(ns1 + "daylightSavingsTimeZone").Attribute("zoneOffset").Value,
+                                                                      zoneAbbreviation = t.Element(ns1+ "daylightSavingsTimeZone").Attribute("zoneAbbreviation").Value
+                                                                  }
+                                                              }).FirstOrDefault(),
 
                                               geoLocation = (from t in o.Descendants(ns1 + "geoLocation")
                                                              select new SiteInfoTypeGeoLocation()
@@ -272,42 +287,55 @@ namespace WaterOneFlow.odws
                                                           select new string[] 
                                                               {
                                                                   t.Value
-                                                              }.ToArray()).FirstOrDefault(),
-
-                                              timeZoneInfo = (from t in o.Descendants(ns1 + "timeZoneInfo")
-                                                            select new SiteInfoTypeTimeZoneInfo {
-                                                                    siteUsesDaylightSavingsTime = bool.Parse(t.Attribute("siteUsesDaylightSavingsTime").Value)
-                                                            }).Single()
+                                                              }.ToArray()).FirstOrDefault()
 
                                           }).FirstOrDefault();
 
                         var varInfo = (from o in tsResp.Elements(ns1 + "variable")
                                        select new VariableInfoType()
                                        {
-                                           variableDescription = o.Element(ns1 + "variableDescription").Value,
-                                           variableName = o.Element(ns1 + "variableName").Value,
+                                           //USGS data service mix these two concepts: 'variableName', and 'variableDescription'
+                                           variableDescription = o.Element(ns1 + "variableName").Value,
+                                           variableName = o.Element(ns1 + "variableDescription").Value,
+
+                                           sampleMedium = "Surface Water Observation",
                                            oid = o.Attribute(ns1 + "oid").Value,
                                            valueType = o.Element(ns1 + "valueType").Value,
-                                           noDataValue = double.Parse(o.Element(ns1 + "noDataValue").Value),
                                            dataType = o.Element(ns1 + "options").Elements(ns1 + "option").First().Value,
 
                                            variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                            select new VariableInfoTypeVariableCode[] {
                                                                new VariableInfoTypeVariableCode(){
-                                                                   network = t.Attribute("network").Value,
+                                                                   network = "NWISDV",   //t.Attribute("network").Value,
                                                                    variableID = int.Parse(t.Attribute("variableID").Value),
-                                                                   vocabulary = t.Attribute("vocabulary").Value,
-                                                                   Value = t.Value,
+                                                                   //
+                                                                   vocabulary = "NWISDV",  // t.Attribute("vocabulary").Value,
+
+                                                                   //add Statistics. manually now, later from option.Value
+                                                                   Value = t.Value + "/DataType=Average",
                                                                    @default = bool.Parse(t.Attribute("default").Value)
                                                                }}).FirstOrDefault(),
                                            //variableProperty,
                                            unit = (from t in o.Descendants(ns1 + "unit")
                                                    select new UnitsType { 
-                                                       unitCode = t.Value
+                                                       unitCode = t.Value,
+
+                                                       //not exposed in USGS service, but required in HydroDesktop
+                                                       unitAbbreviation = t.Value
+
                                                        //unitName
-                                                   }).FirstOrDefault()
+                                                   }).FirstOrDefault(),
 
+                                           options = (from t in o.Descendants(ns1 + "options")
+                                                      select new option[] {
+                                                         new option() {
+                                                          name = t.Element(ns1+"option").Attribute("name").Value,
+                                                          optionCode = t.Element(ns1+"option").Attribute("optionCode").Value,
+                                                          Value = t.Element(ns1+"option").Value
+                                                      }}.ToArray()).FirstOrDefault(),
 
+                                           noDataValueSpecified = true,
+                                           noDataValue = o.Element(ns1 + "noDataValue").IsEmpty? double.Parse("-999999.0"): double.Parse(o.Element(ns1 + "noDataValue").Value)
                                        }).FirstOrDefault();
 
                         foreach(var t in tsResp.Descendants(ns1 + "qualifier"))
@@ -401,46 +429,7 @@ namespace WaterOneFlow.odws
                         response.timeSeries[0].name = tsResp.Attribute("name").Value;
                         response.timeSeries[0].variable = varInfo;
                         response.timeSeries[0].values = values;
-                        //response.timeSeries[0].variable.
                         //response.queryInfo.criteria.
-
-                        //Yaping test for TimeSeriesResponseType object, passed!
-                        /*
-                        response = CuahsiBuilder.CreateTimeSeriesObjectSingleValue(1);
-
-                        TsValuesSingleVariableType[] valuesList = new TsValuesSingleVariableType[1];
-                        TsValuesSingleVariableType values = new TsValuesSingleVariableType();
-                        ValueSingleVariable[] value = new ValueSingleVariable[1];
-                        ValueSingleVariable val = new ValueSingleVariable();
-
-                        MethodType[] methodList = new MethodType[1];
-                        MethodType method = new MethodType();
-
-                        QualifierType[] qualifier = new QualifierType[1];
-                        QualifierType qual = new QualifierType();
-
-                        method.methodID = 2;
-                        method.methodDescription = "test";
-                        values.method = methodList;
-
-                        val.dateTime = new DateTime(2010, 12, 26)  ; //"2010-12-26T00:00:00.000");
-                        val.Value = decimal.Parse("104");
-                        value[0] = val;
-                        values.value = value;
-
-                        qual.network = "NWISDV2";
-                        qual.qualifierCode = "A";
-                        qual.qualifierDescription = "test desp";
-                        qual.qualifierID = 1;
-                        qual.vocabulary = "uv";
-                        qualifier[0] = qual;
-                        values.qualifier = qualifier;
-
-                        valuesList[0] = values;
-
-                        response.timeSeries[0].values = valuesList; */
-
-
 
                         return response;
                     }
