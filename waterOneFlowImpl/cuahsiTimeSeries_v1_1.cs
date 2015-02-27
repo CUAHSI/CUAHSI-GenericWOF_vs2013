@@ -349,11 +349,8 @@ namespace WaterOneFlow.Schema.v1_1 {
         private string zoneAbbreviationField;
         
         /// <remarks/>
-        //Yaping added
-        [XmlAttributeAttribute("zoneoffset", DataType = "normalizedString")]
-        //[System.Xml.Serialization.XmlAttributeAttribute(DataType="normalizedString")]
-        public string zoneOffset
-        {
+        [System.Xml.Serialization.XmlAttributeAttribute(DataType="normalizedString")]
+        public string zoneOffset {
             get {
                 return this.zoneOffsetField;
             }
@@ -363,9 +360,7 @@ namespace WaterOneFlow.Schema.v1_1 {
         }
         
         /// <remarks/>
-        //Yaping added
-        [XmlAttributeAttribute("zoneabbreviation", DataType = "token")]
-        //[System.Xml.Serialization.XmlAttributeAttribute(DataType="token")]
+        [System.Xml.Serialization.XmlAttributeAttribute(DataType="token")]
         public string zoneAbbreviation {
             get {
                 return this.zoneAbbreviationField;

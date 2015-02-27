@@ -327,11 +327,12 @@ namespace WaterOneFlow.odws
                                                    }).FirstOrDefault(),
 
                                            options = (from t in o.Descendants(ns1 + "options")
-                                                      select new option() {
+                                                      select new option[] {
+                                                         new option() {
                                                           name = t.Element(ns1+"option").Attribute("name").Value,
                                                           optionCode = t.Element(ns1+"option").Attribute("optionCode").Value,
                                                           Value = t.Element(ns1+"option").Value
-                                                      }).ToArray(),
+                                                      }}.ToArray()).FirstOrDefault(),
 
                                            noDataValueSpecified = true,
                                            noDataValue = o.Element(ns1 + "noDataValue").IsEmpty? double.Parse("-999999.0"): double.Parse(o.Element(ns1 + "noDataValue").Value)
