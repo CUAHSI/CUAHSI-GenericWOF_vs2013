@@ -48,7 +48,7 @@ namespace WaterOneFlow.odm.v1_1.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=drv42dlwsp.database.windows.net,1433;Initial Catalog=OD1_1_1_YXIAO;Us" +
-            "er ID=hiscentraladmin;Password=1n$an1tY")]
+            "er ID=hiscentraladmin;Password=HIS@cuahs1")]
         public string OD1_1_1_YXIAOConnectionString {
             get {
                 return ((string)(this["OD1_1_1_YXIAOConnectionString"]));
