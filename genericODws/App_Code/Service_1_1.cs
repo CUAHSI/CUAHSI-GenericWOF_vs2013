@@ -192,9 +192,6 @@ namespace WaterOneFlow.odws
             {
                 GlobalClass.WaterAuth.DataValuesServiceAllowed(Context, authToken);
 
-                //Yaping commented out
-                //if (!useODForValues) throw new SoapException("GetValues implemented external to this service. Call GetSiteInfo, and SeriesCatalog includes the service Wsdl for GetValues. Attribute:serviceWsdl on Element:seriesCatalog XPath://seriesCatalog/[@serviceWsdl]", new XmlQualifiedName("ServiceException"));                
-
                 try
                 {
                     if (useUSGSForValues)
@@ -211,162 +208,7 @@ namespace WaterOneFlow.odws
                         }
 
                         XElement root = xDocument.Root;
-
-                        var sourceInfo = (from o in root.Descendants(ns1 + "sourceInfo")
-                                          select new SiteInfoType()
-                                          {
-                                              siteName = o.Element(ns1 + "siteName").Value,
-
-                                              siteCode = (from t in o.Descendants(ns1 + "siteCode")
-                                                          select new SiteInfoTypeSiteCode[] {
-                                                            new SiteInfoTypeSiteCode(){
-                                                            //Original value: t.Attribute("network").Value = "NWIS"
-                                                            network = "NWISDV",
-                                                            agencyCode = t.Attribute("agencyCode").Value,
-                                                            Value = t.Value
-                                                            }}
-                                                          ).FirstOrDefault(),
-
-                                              timeZoneInfo = (from t in o.Descendants(ns1 + "timeZoneInfo")
-                                                              select new SiteInfoTypeTimeZoneInfo()
-                                                              {
-                                                                  siteUsesDaylightSavingsTime = bool.Parse(t.Attribute("siteUsesDaylightSavingsTime").Value),
-                                                                  defaultTimeZone = new SiteInfoTypeTimeZoneInfoDefaultTimeZone()
-                                                                  {
-                                                                      zoneOffset = t.Element(ns1 + "defaultTimeZone").Attribute("zoneOffset").Value,
-                                                                      zoneAbbreviation = t.Element(ns1 + "defaultTimeZone").Attribute("zoneAbbreviation").Value
-                                                                  },
-                                                                  daylightSavingsTimeZone = new SiteInfoTypeTimeZoneInfoDaylightSavingsTimeZone()
-                                                                  {
-                                                                      zoneOffset = t.Element(ns1 + "daylightSavingsTimeZone").Attribute("zoneOffset").Value,
-                                                                      zoneAbbreviation = t.Element(ns1 + "daylightSavingsTimeZone").Attribute("zoneAbbreviation").Value
-                                                                  }
-                                                              }).FirstOrDefault(),
-
-                                              geoLocation = (from t in o.Descendants(ns1 + "geoLocation")
-                                                             select new SiteInfoTypeGeoLocation()
-                                                            {
-                                                                geogLocation = (from s in t.Descendants(ns1 + "geogLocation")
-                                                                                //default value => t.Attribute("xsi:type").Value = "LatLonPointType"
-                                                                                //where( t.Name.ToString().Contains("LatLonPointType"))
-                                                                                select new LatLonPointType()
-                                                                                {
-                                                                                    latitude = double.Parse(s.Element(ns1 + "latitude").Value),
-                                                                                    longitude = double.Parse(s.Element(ns1 + "longitude").Value)
-                                                                                }).FirstOrDefault()
-                                                            }).FirstOrDefault(),
-
-                                              //<note title="siteTypeCd">ST</note>
-                                              //<note title="hucCd">01070004</note>
-                                              //<note title="stateCd">25</note>
-                                              //<note title="countyCd">25027</note>
-                                              //NoteType {typeField; hrefField;titleField;showField;valueField;
-                                              note = (from t in o.Descendants(ns1 + "siteProperty")
-                                                      let tit = t.Attribute("name").Value
-                                                      select new NoteType() {
-                                                            type = "note",
-                                                            title = tit,
-                                                            Value = t.Value
-                                                      }).ToArray(),
-        
-                                              siteType = (from t in o.Descendants(ns1 + "siteProperty")
-                                                          where t.Attribute("name").Value.Equals("siteTypeCd")
-                                                          select new string[] 
-                                                              {
-                                                                  t.Value
-                                                              }.ToArray()).FirstOrDefault()
-
-                                          }).FirstOrDefault();
-
-                        var varInfo = (from o in root.Descendants(ns1 + "variable")
-                                       select new VariableInfoType()
-                                       {
-                                           //USGS data service mix these two concepts: 'variableName', and 'variableDescription'
-                                           variableDescription = o.Element(ns1 + "variableName").Value,
-                                           variableName = o.Element(ns1 + "variableDescription").Value,
-
-                                           sampleMedium = "Surface Water Observation",
-                                           oid = o.Attribute(ns1 + "oid").Value,
-                                           valueType = o.Element(ns1 + "valueType").Value,
-                                           dataType = o.Element(ns1 + "options").Elements(ns1 + "option").First().Value,
-
-                                           variableCode = (from t in o.Descendants(ns1 + "variableCode")
-                                                           select new VariableInfoTypeVariableCode[] {
-                                                               new VariableInfoTypeVariableCode(){
-                                                                   network = "NWISDV",   //t.Attribute("network").Value,
-                                                                   variableID = int.Parse(t.Attribute("variableID").Value),
-                                                                   vocabulary = "NWISDV",  // t.Attribute("vocabulary").Value,
-                                                                   Value = t.Value,
-                                                                   @default = bool.Parse(t.Attribute("default").Value)
-                                                               }}).FirstOrDefault(),
-                                           //variableProperty,
-                                           unit = (from t in o.Descendants(ns1 + "unit")
-                                                   select new UnitsType
-                                                   {
-                                                       unitCode = t.Value,
-
-                                                       //not exposed in USGS service, but required in HydroDesktop
-                                                       //since HydroDesktop only select node with r.GetAttribute("unitsAbbreviation");
-                                                       //In cuahsiTimeSeries_v1_1.cs, I added 
-                                                       //[XmlElementAttribute("unitsAbbreviation")]  //yaping added
-                                                       //        public string unitAbbreviation
-                                                       unitAbbreviation = t.Value
-                                                   }).FirstOrDefault(),
-
-                                           options = (from t in o.Descendants(ns1 + "options")
-                                                      select new option[] {
-                                                         new option() {
-                                                          name = t.Element(ns1+"option").Attribute("name").Value,
-                                                          optionCode = t.Element(ns1+"option").Attribute("optionCode").Value,
-                                                          Value = t.Element(ns1+"option").Value
-                                                      }}.ToArray()).FirstOrDefault(),
-
-                                           noDataValueSpecified = true,
-                                           noDataValue = o.Element(ns1 + "noDataValue").IsEmpty ? double.Parse("-999999.0") : double.Parse(o.Element(ns1 + "noDataValue").Value)
-                                       }).FirstOrDefault();
-
-                        //For testing
-                        //foreach (var t in root.Descendants(ns1 + "qualifier"))
-                        //{
-                        //    string qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty ? null : t.Element(ns1 + "qualifierCode").Value;
-                        //    string qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty ? null : t.Element(ns1 + "qualifierDescription").Value;
-                        //    int qualifierID = int.Parse(t.Attribute("qualifierID").Value);
-                        //    string network = string.IsNullOrEmpty(t.Attribute("network").Value) ? null : t.Attribute("network").Value;
-                        //    string vocabulary = t.Attribute("vocabulary").Value;
-                        //}
-
-                        var values = (from o in root.Descendants(ns1 + "values")
-                                      select new TsValuesSingleVariableType[] {
-                                           new TsValuesSingleVariableType() 
-                                          {
-                                              //ValueSingleVariable[] value
-                                              value = (from t in o.Elements(ns1+"value") 
-                                                       let dt = t.Attribute("dateTime").Value
-                                                       select new ValueSingleVariable() {
-                                                                qualifiers = t.Attribute("qualifiers").Value,
-                                                                dateTime = new DateTime(
-                                                                int.Parse(dt.Substring(0, 4)), int.Parse(dt.Substring(5, 2)), int.Parse(dt.Substring(8,2)), 0,0,0),
-                                                                Value = Decimal.Parse(t.Value)
-                                                       }).ToArray(),
-
-                                              qualifier =  (from t in o.Elements(ns1 + "qualifier")
-                                                            select new QualifierType()
-                                                            {
-                                                                qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? null: t.Element(ns1+"qualifierCode").Value,
-                                                                qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? null: t.Element(ns1+"qualifierDescription").Value,
-                                                                qualifierID = int.Parse(t.Attribute("qualifierID").Value),
-                                                                //network = t.Attribute("network").Value,
-                                                                //vocabulary = t.Attribute("vocabulary").Value
-                                                            }).ToArray(),
-
-                                                method = (from t in o.Descendants(ns1 + "method")
-                                                          select new MethodType()
-                                                          {
-                                                            methodDescription = t.Element(ns1 + "methodDescription").IsEmpty? null: t.Element(ns1+"methodDescription").Value,
-                                                            methodID = int.Parse(t.Attribute("methodID").Value)
-                                                          }).ToArray()
-
-                                          }}).FirstOrDefault();
+                        var tsResp = root.Element(ns1 + "timeSeries");
 
                         var queryInfo = (from o in root.Descendants(ns1 + "queryInfo")
                                          select new QueryInfoType()
@@ -411,13 +253,188 @@ namespace WaterOneFlow.odws
                         TimeSeriesResponseType response = null;
                         response = CuahsiBuilder.CreateTimeSeriesObjectSingleValue(1);
                         response.queryInfo = queryInfo;
-                        response.timeSeries[0].sourceInfo = sourceInfo;
 
-                        //There is only one timeseries returned from USGS, even with those sites with dd_num > 1 
-                        // This is actually some ambiguity of (different methodIDs, but only one timesereis exposed)
-                        response.timeSeries[0].name = root.Elements(ns1 + "timeSeries").First().Attribute("name").Value;
-                        response.timeSeries[0].variable = varInfo;
-                        response.timeSeries[0].values = values;
+                        
+                        //If nothing returns in <timeSeries> node
+                        if (tsResp == null)
+                        {
+                            response.timeSeries[0].sourceInfo = null;
+                            response.timeSeries[0].variable = null;
+                            response.timeSeries[0].values = null;
+                        }
+                        else
+                        {
+                            var sourceInfo = (from o in tsResp.Elements(ns1 + "sourceInfo")
+                                              select new SiteInfoType()
+                                              {
+                                                  siteName = o.Element(ns1 + "siteName").Value,
+
+                                                  siteCode = (from t in o.Descendants(ns1 + "siteCode")
+                                                              select new SiteInfoTypeSiteCode[] {
+                                                            new SiteInfoTypeSiteCode(){
+                                                            //Original value: t.Attribute("network").Value = "NWIS"
+                                                            network = "NWISDV",
+                                                            agencyCode = t.Attribute("agencyCode").Value,
+                                                            Value = t.Value
+                                                            }}
+                                                              ).FirstOrDefault(),
+
+                                                  timeZoneInfo = (from t in o.Descendants(ns1 + "timeZoneInfo")
+                                                                  select new SiteInfoTypeTimeZoneInfo()
+                                                                  {
+                                                                      siteUsesDaylightSavingsTime = bool.Parse(t.Attribute("siteUsesDaylightSavingsTime").Value),
+                                                                      defaultTimeZone = new SiteInfoTypeTimeZoneInfoDefaultTimeZone()
+                                                                      {
+                                                                          zoneOffset = t.Element(ns1 + "defaultTimeZone").Attribute("zoneOffset").Value,
+                                                                          zoneAbbreviation = t.Element(ns1 + "defaultTimeZone").Attribute("zoneAbbreviation").Value
+                                                                      },
+                                                                      daylightSavingsTimeZone = new SiteInfoTypeTimeZoneInfoDaylightSavingsTimeZone()
+                                                                      {
+                                                                          zoneOffset = t.Element(ns1 + "daylightSavingsTimeZone").Attribute("zoneOffset").Value,
+                                                                          zoneAbbreviation = t.Element(ns1 + "daylightSavingsTimeZone").Attribute("zoneAbbreviation").Value
+                                                                      }
+                                                                  }).FirstOrDefault(),
+
+                                                  geoLocation = (from t in o.Descendants(ns1 + "geoLocation")
+                                                                 select new SiteInfoTypeGeoLocation()
+                                                                {
+                                                                    geogLocation = (from s in t.Descendants(ns1 + "geogLocation")
+                                                                                    //default value => t.Attribute("xsi:type").Value = "LatLonPointType"
+                                                                                    //where( t.Name.ToString().Contains("LatLonPointType"))
+                                                                                    select new LatLonPointType()
+                                                                                    {
+                                                                                        latitude = double.Parse(s.Element(ns1 + "latitude").Value),
+                                                                                        longitude = double.Parse(s.Element(ns1 + "longitude").Value)
+                                                                                    }).FirstOrDefault()
+                                                                }).FirstOrDefault(),
+
+                                                  //<note title="siteTypeCd">ST</note>
+                                                  //<note title="hucCd">01070004</note>
+                                                  //<note title="stateCd">25</note>
+                                                  //<note title="countyCd">25027</note>
+                                                  //NoteType {typeField; hrefField;titleField;showField;valueField;
+                                                  note = (from t in o.Descendants(ns1 + "siteProperty")
+                                                          let tit = t.Attribute("name").Value
+                                                          select new NoteType()
+                                                          {
+                                                              type = "note",
+                                                              title = tit,
+                                                              Value = t.Value
+                                                          }).ToArray(),
+
+                                                  siteType = (from t in o.Descendants(ns1 + "siteProperty")
+                                                              where t.Attribute("name").Value.Equals("siteTypeCd")
+                                                              select new string[] 
+                                                              {
+                                                                  t.Value
+                                                              }.ToArray()).FirstOrDefault()
+
+                                              }).FirstOrDefault();
+
+                            var varInfo = (from o in tsResp.Elements(ns1 + "variable")
+                                           select new VariableInfoType()
+                                           {
+                                               //USGS data service mix these two concepts: 'variableName', and 'variableDescription'
+                                               variableDescription = o.Element(ns1 + "variableName").Value,
+                                               variableName = o.Element(ns1 + "variableDescription").Value,
+
+                                               sampleMedium = "Surface Water Observation",
+                                               oid = o.Attribute(ns1 + "oid").Value,
+                                               valueType = o.Element(ns1 + "valueType").Value,
+                                               dataType = o.Element(ns1 + "options").Elements(ns1 + "option").First().Value,
+
+                                               variableCode = (from t in o.Descendants(ns1 + "variableCode")
+                                                               select new VariableInfoTypeVariableCode[] {
+                                                               new VariableInfoTypeVariableCode(){
+                                                                   network = "NWISDV",   //t.Attribute("network").Value,
+                                                                   variableID = int.Parse(t.Attribute("variableID").Value),
+                                                                   vocabulary = "NWISDV",  // t.Attribute("vocabulary").Value,
+                                                                   Value = t.Value,
+                                                                   @default = bool.Parse(t.Attribute("default").Value)
+                                                               }}).FirstOrDefault(),
+                                               //variableProperty,
+                                               unit = (from t in o.Descendants(ns1 + "unit")
+                                                       select new UnitsType
+                                                       {
+                                                           unitCode = t.Value,
+
+                                                           //not exposed in USGS service, but required in HydroDesktop
+                                                           //since HydroDesktop only select node with r.GetAttribute("unitsAbbreviation");
+                                                           //    see more in HydroDesktop -> WATERML11Parser.cs
+                                                           //
+                                                           //Correspondingly, I added  in cuahsiTimeSeries_v1_1.cs: 
+                                                           //-----------------------------------------------------------
+                                                           //[XmlElementAttribute("unitsAbbreviation")]  //yaping added
+                                                           //        public string unitAbbreviation
+                                                           //-----------------------------------------------------------
+                                                           unitAbbreviation = t.Value
+                                                       }).FirstOrDefault(),
+
+                                               options = (from t in o.Descendants(ns1 + "options")
+                                                          select new option[] {
+                                                         new option() {
+                                                          name = t.Element(ns1+"option").Attribute("name").Value,
+                                                          optionCode = t.Element(ns1+"option").Attribute("optionCode").Value,
+                                                          Value = t.Element(ns1+"option").Value
+                                                      }}.ToArray()).FirstOrDefault(),
+
+                                               noDataValueSpecified = true,
+                                               noDataValue = o.Element(ns1 + "noDataValue").IsEmpty ? double.Parse("-999999.0") : double.Parse(o.Element(ns1 + "noDataValue").Value)
+                                           }).FirstOrDefault();
+
+                            var values = (from o in tsResp.Elements(ns1 + "values")
+                                          select new TsValuesSingleVariableType[] {
+                                           new TsValuesSingleVariableType() 
+                                          {
+                                              //ValueSingleVariable[] value
+                                              value = (from t in o.Elements(ns1+"value") 
+                                                       let dt = t.Attribute("dateTime").Value
+                                                       select new ValueSingleVariable() {
+                                                                qualifiers = t.Attribute("qualifiers").Value,
+                                                                dateTime = new DateTime(
+                                                                int.Parse(dt.Substring(0, 4)), int.Parse(dt.Substring(5, 2)), int.Parse(dt.Substring(8,2)), 0,0,0),
+                                                                Value = Decimal.Parse(t.Value)
+                                                       }).ToArray(),
+
+                                              qualifier =  (from t in o.Elements(ns1 + "qualifier")
+                                                            select new QualifierType()
+                                                            {
+                                                                qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? null: t.Element(ns1+"qualifierCode").Value,
+                                                                qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? null: t.Element(ns1+"qualifierDescription").Value,
+                                                                qualifierID = int.Parse(t.Attribute("qualifierID").Value),
+                                                                //network = t.Attribute("network").Value,
+                                                                //vocabulary = t.Attribute("vocabulary").Value
+                                                            }).ToArray(),
+
+                                                method = (from t in o.Descendants(ns1 + "method")
+                                                          select new MethodType()
+                                                          {
+                                                            methodDescription = t.Element(ns1 + "methodDescription").IsEmpty? null: t.Element(ns1+"methodDescription").Value,
+                                                            methodID = int.Parse(t.Attribute("methodID").Value)
+                                                          }).ToArray()
+
+                                          }}).FirstOrDefault();
+
+
+                            response.timeSeries[0].sourceInfo = sourceInfo;
+
+                            //There is only one timeseries returned from USGS, even with those sites with dd_num > 1 
+                            // This is actually some ambiguity of (different methodIDs, but only one timesereis exposed)
+                            response.timeSeries[0].name = tsResp.Attribute("name").Value;
+
+                            response.timeSeries[0].variable = varInfo;
+                            response.timeSeries[0].values = values;
+
+
+                            //Get DataType
+                            //Assuming there is only one <option> node 
+                            string DT = null;
+                            foreach (var t in tsResp.Descendants(ns1 + "options"))
+                            {
+                                DT = t.Element(ns1 + "option").Value;
+                            }
+                            response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
+                        } // else
 
                         return response;
                     }

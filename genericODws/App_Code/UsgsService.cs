@@ -98,9 +98,6 @@ namespace USGSTranducer
             }
 
             return responseNwis;
-
-            //Yaping - comment out so that the right xml is returned for deserialization in GetValuesObject() call
-            //return WaterOneFlowImpl.v1_1.WSUtils.ConvertToXml(responseNwis, typeof(String));
         }
 
 
