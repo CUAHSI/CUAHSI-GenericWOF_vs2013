@@ -222,8 +222,13 @@ namespace WaterOneFlow.odws
                                                              timeParam = (from p in t.Elements(ns1 + "timeParam")
                                                                           select new QueryInfoTypeCriteriaTimeParam()
                                                                           {
-                                                                              beginDateTime = p.Element(ns1 + "beginDateTime").Value,
-                                                                              endDateTime = p.Element(ns1 + "endDateTime").Value
+                                                                              //in DV
+                                                                              //beginDateTime = p.Element(ns1 + "beginDateTime").Value,
+                                                                              //endDateTime = p.Element(ns1 + "endDateTime").Value
+                                                                              //in UV
+                                                                              beginDateTime = startDate + ":00.000",
+                                                                              endDateTime = endDate + ":00.000",
+                                                                              
                                                                           }).FirstOrDefault(),
                                                              parameter = new QueryInfoTypeCriteriaParameter[] {
                                                                         new QueryInfoTypeCriteriaParameter() {
@@ -392,7 +397,9 @@ namespace WaterOneFlow.odws
                                                        select new ValueSingleVariable() {
                                                                 qualifiers = t.Attribute("qualifiers").Value,
                                                                 dateTime = new DateTime(
-                                                                int.Parse(dt.Substring(0, 4)), int.Parse(dt.Substring(5, 2)), int.Parse(dt.Substring(8,2)), 0,0,0),
+                                                                int.Parse(dt.Substring(0, 4)), int.Parse(dt.Substring(5, 2)), int.Parse(dt.Substring(8,2)), 
+                                                                //UV fixed from (00:00:00)
+                                                                int.Parse(dt.Substring(11, 2)), int.Parse(dt.Substring(14, 2)), int.Parse(dt.Substring(17, 2))),
                                                                 Value = Decimal.Parse(t.Value)
                                                        }).ToArray(),
 
