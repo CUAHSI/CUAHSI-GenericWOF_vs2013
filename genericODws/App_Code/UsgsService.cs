@@ -22,6 +22,7 @@ namespace USGSTranducer
     using System.Xml.Linq;
     using System.IO;
     using System.Xml;
+    using System.Text;
 
     public class UsgsService
     {
@@ -140,7 +141,7 @@ namespace USGSTranducer
 
             if (nyear == 0)
             {
-                xdoc = getXML(endpoint, siteCode, paramCode, startDT, endDT);
+                xdocSav = getXML(endpoint, siteCode, paramCode, startDT, endDT);
             }
             else
             {
@@ -148,7 +149,7 @@ namespace USGSTranducer
                 {
                     if (i == 0)
                     {
-                        startDT2 = startDT;
+                        startDT2 = startDT.Substring(0, 10);
                         endDT2 = startDT.Substring(0, 4) + "-12-31";
                     }
                     else if (i < nyear)
@@ -161,7 +162,7 @@ namespace USGSTranducer
                     else
                     {
                         startDT2 = endDT.Substring(0, 4) + "-01-01";
-                        endDT2 = endDT;
+                        endDT2 = endDT.Substring(0, 10);
                     }
 
                     xdoc = getXML(endpoint, siteCode, paramCode, startDT2, endDT2);
@@ -179,9 +180,12 @@ namespace USGSTranducer
                         values = values.Concat(value);
 
                         //add "value" Element
-                        xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values")
-                            .AddAfterSelf(from s in xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value")
-                                          select s);
+                        xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value").LastOrDefault().AddAfterSelf
+                            (from s in xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value") select s);
+
+                        //xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values")    
+                        //    .AddAfterSelf(from s in xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value")
+                        //                  select s);
 
                         //add "qualifier" Element
                         var qualIDs = (from s in xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "qualifier")
@@ -192,7 +196,7 @@ namespace USGSTranducer
                         {
                             if (!qualIDs.Contains(ele.Attribute("qualifierID").Value))
                             {
-                                xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "qualifier").FirstOrDefault().AddAfterSelf(ele);
+                                xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "qualifier").LastOrDefault().AddAfterSelf(ele);
                             }
                         }
 
@@ -205,7 +209,7 @@ namespace USGSTranducer
                         {
                             if (!methIDs.Contains(ele.Attribute("methodID").Value))
                             {
-                                xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "method").FirstOrDefault().AddAfterSelf(ele);
+                                xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "method").LastOrDefault().AddAfterSelf(ele);
                             }
                         }
 
@@ -215,16 +219,23 @@ namespace USGSTranducer
 
                 }
             } //end if-else
-                //xdocSav.Save(logFile);
-                using (var stringWriter = new StringWriter())
-                
-                using (var xmlTextWriter = XmlWriter.Create(stringWriter)) //, new XmlWriterSettings(){Indent = true; IndentChars = " "; Encoding = Encoding.UTF8}))
+ //               xdocSav.Save(logFile);
+                StringBuilder sb1 = new StringBuilder();
+                using (StringWriter sr1 = new StringWriter(sb1))
                 {
-                    xdocSav.WriteTo(xmlTextWriter);
-                    xmlTextWriter.Flush();
-                    return stringWriter.GetStringBuilder().ToString();
-                }
+                    xdocSav.Save(sr1, SaveOptions.None);
+                } 
+            
+            //using (var stringWriter = new StringWriter(logFile))
+                
+            //    using (var xmlTextWriter = XmlWriter.Create(stringWriter)) //, new XmlWriterSettings(){Indent = true; IndentChars = " "; Encoding = Encoding.UTF8}))
+            //    {
+            //        xdocSav.WriteTo(xmlTextWriter);
+            //        xmlTextWriter.Flush();
+            //        return stringWriter.GetStringBuilder().ToString();
+            //    }
 
+                return sb1.ToString();
 
         } //end of function
 
