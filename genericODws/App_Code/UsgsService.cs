@@ -101,10 +101,7 @@ namespace USGSTranducer
                 }
                 else if (endpoint.Contains("/iv/"))
                 {
-                    //usgsDV = new UsgsValues(
-                    //    endpoint,
-                    //    paramValidator.siteCd, paramValidator.varCd,
-                    //    paramValidator.startDateField, paramValidator.endDateField);
+                    //request USGS one year at one time
                     responseNwis = splitRequest(endpoint,
                         paramValidator.siteCd, paramValidator.varCd,
                         paramValidator.startDateField, paramValidator.endDateField);
@@ -121,9 +118,6 @@ namespace USGSTranducer
 
         public string splitRequest(string endpoint, string siteCode, string paramCode, string startDT, string endDT)
         {
-            string logFile = String.Format("testOUT_{0}_{1}_{2}_{3}.xml", siteCode, paramCode, startDT, endDT);
-
-
             //split into each year
             int startYR = int.Parse(startDT.Substring(0, 4));
             int endYR = int.Parse(endDT.Substring(0, 4));
@@ -132,11 +126,10 @@ namespace USGSTranducer
 
             if (nyear < 0)
             {
-                Console.WriteLine("start year cannot be after end year");
+                //Console.WriteLine("start year cannot be after end year");
                 return null;
             }
 
-            IEnumerable<XElement> value, values = null;
             XDocument xdoc, xdocSav = null;
 
             if (nyear == 0)
@@ -147,6 +140,7 @@ namespace USGSTranducer
             {
                 for (int i = 0; i <= nyear; i++)
                 {
+                    //first year
                     if (i == 0)
                     {
                         startDT2 = startDT.Substring(0, 10);
@@ -167,25 +161,15 @@ namespace USGSTranducer
 
                     xdoc = getXML(endpoint, siteCode, paramCode, startDT2, endDT2);
 
-                    value = xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value").ToList();
-                    //Console.WriteLine(String.Format("{0}| {1:12},{2:12}, {3}", DateTime.Now.Millisecond.ToString(), startDT2, endDT2, value.Count()));
-
                     if (i == 0)
                     {
-                        values = value;
                         xdocSav = xdoc;
                     }
                     else
                     {
-                        values = values.Concat(value);
-
                         //add "value" Element
                         xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value").LastOrDefault().AddAfterSelf
                             (from s in xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value") select s);
-
-                        //xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values")    
-                        //    .AddAfterSelf(from s in xdoc.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "value")
-                        //                  select s);
 
                         //add "qualifier" Element
                         var qualIDs = (from s in xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "qualifier")
@@ -212,29 +196,15 @@ namespace USGSTranducer
                                 xdocSav.Root.Element(ns + "timeSeries").Element(ns + "values").Elements(ns + "method").LastOrDefault().AddAfterSelf(ele);
                             }
                         }
-
                     }
-                    //Console.WriteLine(String.Format("total values: {0:12},{1:12}, {2}", startDT2, endDT2, values.Count()));
-
-
                 }
             } //end if-else
- //               xdocSav.Save(logFile);
                 StringBuilder sb1 = new StringBuilder();
                 using (StringWriter sr1 = new StringWriter(sb1))
                 {
                     xdocSav.Save(sr1, SaveOptions.None);
                 } 
             
-            //using (var stringWriter = new StringWriter(logFile))
-                
-            //    using (var xmlTextWriter = XmlWriter.Create(stringWriter)) //, new XmlWriterSettings(){Indent = true; IndentChars = " "; Encoding = Encoding.UTF8}))
-            //    {
-            //        xdocSav.WriteTo(xmlTextWriter);
-            //        xmlTextWriter.Flush();
-            //        return stringWriter.GetStringBuilder().ToString();
-            //    }
-
                 return sb1.ToString();
 
         } //end of function
@@ -246,9 +216,6 @@ namespace USGSTranducer
                          endpoint, siteCode, paramCode, startDT, endDT);
             XDocument xdoc = XDocument.Load(url);
             return xdoc;
-
         }
-
     }
-
 }
