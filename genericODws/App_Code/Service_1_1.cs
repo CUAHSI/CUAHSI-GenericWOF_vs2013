@@ -209,6 +209,10 @@ namespace WaterOneFlow.odws
 
                         XElement root = xDocument.Root;
                         var tsResp = root.Element(ns1 + "timeSeries");
+                        string bDT = (from o in root.Descendants(ns1 + "value")
+                                                select o.Attribute("dateTime").Value).FirstOrDefault().ToString();
+                        string eDT = (from o in root.Descendants(ns1 + "value")
+                                                select o.Attribute("dateTime").Value).LastOrDefault().ToString();
 
                         var queryInfo = (from o in root.Descendants(ns1 + "queryInfo")
                                          select new QueryInfoType()
@@ -226,9 +230,8 @@ namespace WaterOneFlow.odws
                                                                               //beginDateTime = p.Element(ns1 + "beginDateTime").Value,
                                                                               //endDateTime = p.Element(ns1 + "endDateTime").Value
                                                                               //in UV
-                                                                              beginDateTime = startDate + ":00.000",
-                                                                              endDateTime = endDate + ":00.000",
-                                                                              
+                                                                              beginDateTime = bDT.Substring(0, 23),
+                                                                              endDateTime = eDT.Substring(0, 23)                                                                              
                                                                           }).FirstOrDefault(),
                                                              parameter = new QueryInfoTypeCriteriaParameter[] {
                                                                         new QueryInfoTypeCriteriaParameter() {
@@ -241,13 +244,15 @@ namespace WaterOneFlow.odws
                                                                             },
                                                                         new QueryInfoTypeCriteriaParameter() {
                                                                                 name = "beginDate",
-                                                                                value = (from p in t.Elements(ns1 + "timeParam")
-                                                                                    select p.Element(ns1+"beginDateTime").Value).Single()
+                                                                                value = bDT.Substring(0, 23)
+                                                                                //value = (from p in t.Elements(ns1 + "timeParam")
+                                                                                //    select p.Element(ns1+"beginDateTime").Value).Single()
                                                                             },
                                                                         new QueryInfoTypeCriteriaParameter() {
                                                                                 name = "endDate",
-                                                                                value = (from p in t.Elements(ns1 + "timeParam")
-                                                                                    select p.Element(ns1+"endDateTime").Value).Single()
+                                                                                value = eDT.Substring(0, 23)
+                                                                                //value = (from p in t.Elements(ns1 + "timeParam")
+                                                                                //    select p.Element(ns1+"endDateTime").Value).Single()
                                                                             }
 
                                                                         }

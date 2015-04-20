@@ -138,6 +138,7 @@ namespace USGSTranducer
             }
             else
             {
+                int First = 1;
                 for (int i = 0; i <= nyear; i++)
                 {
                     //first year
@@ -161,9 +162,12 @@ namespace USGSTranducer
 
                     xdoc = getXML(endpoint, siteCode, paramCode, startDT2, endDT2);
 
-                    if (i == 0)
+                    if (xdoc.Root.Element(ns + "timeSeries") == null) continue;
+                 
+                    if (First == 1)
                     {
                         xdocSav = xdoc;
+                        First = 0;
                     }
                     else
                     {
