@@ -203,13 +203,21 @@ namespace USGSTranducer
                     }
                 }
             } //end if-else
+
+            if (xdocSav == null)
+            {
+                return null;
+            }
+            else
+            {
                 StringBuilder sb1 = new StringBuilder();
                 using (StringWriter sr1 = new StringWriter(sb1))
                 {
                     xdocSav.Save(sr1, SaveOptions.None);
-                } 
-            
+                }
+
                 return sb1.ToString();
+            }
 
         } //end of function
 

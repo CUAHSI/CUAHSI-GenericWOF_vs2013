@@ -209,10 +209,23 @@ namespace WaterOneFlow.odws
 
                         XElement root = xDocument.Root;
                         var tsResp = root.Element(ns1 + "timeSeries");
-                        string bDT = (from o in root.Descendants(ns1 + "value")
-                                                select o.Attribute("dateTime").Value).FirstOrDefault().ToString();
-                        string eDT = (from o in root.Descendants(ns1 + "value")
-                                                select o.Attribute("dateTime").Value).LastOrDefault().ToString();
+
+                        string bDT, eDT;
+                        //No matter what returns, always returns the requested DateTime
+                        //if (tsResp == null)
+                        //{
+                            bDT = (from o in root.Descendants(ns1 + "beginDateTime")
+                                   select o.Value).FirstOrDefault().ToString();
+                            eDT = (from o in root.Descendants(ns1 + "endDateTime")
+                                   select o.Value).FirstOrDefault().ToString();
+                        //}
+                        //else
+                        //{
+                        //    bDT = (from o in root.Descendants(ns1 + "value")
+                        //           select o.Attribute("dateTime").Value).FirstOrDefault().ToString();
+                        //    eDT = (from o in root.Descendants(ns1 + "value")
+                        //           select o.Attribute("dateTime").Value).LastOrDefault().ToString();
+                        //}
 
                         var queryInfo = (from o in root.Descendants(ns1 + "queryInfo")
                                          select new QueryInfoType()
@@ -356,9 +369,11 @@ namespace WaterOneFlow.odws
                                                variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                                select new VariableInfoTypeVariableCode[] {
                                                                new VariableInfoTypeVariableCode(){
-                                                                   network = "NWISDV",   //t.Attribute("network").Value,
+                                                                   //// "NWISDV",   //t.Attribute("network").Value,
+                                                                   network = System.Configuration.ConfigurationManager.AppSettings["network"], 
                                                                    variableID = int.Parse(t.Attribute("variableID").Value),
-                                                                   vocabulary = "NWISDV",  // t.Attribute("vocabulary").Value,
+                                                                   //"NWISDV",  // t.Attribute("vocabulary").Value,
+                                                                   vocabulary = System.Configuration.ConfigurationManager.AppSettings["network"],
                                                                    Value = t.Value,
                                                                    @default = bool.Parse(t.Attribute("default").Value)
                                                                }}).FirstOrDefault(),
@@ -445,7 +460,11 @@ namespace WaterOneFlow.odws
                             {
                                 DT = t.Element(ns1 + "option").Value;
                             }
-                            response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
+
+                            if (sourceInfo.siteCode[0].network == "NWISDV")
+                            {
+                                response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
+                            } 
                         } // else
 
                         return response;
