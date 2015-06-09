@@ -72,8 +72,11 @@ namespace USGSTranducer
         //Validate input parameters
         public void Validate()
         {
-            string locPattern = @"\w*:\w*_([0-9][0-9][0-9][0-9][0-9])";
-            string varPattern = @"\w*:\w*_([0-9][0-9][0-9][0-9][0-9])(_(?i)DataType(?-i)=)(\w*)";
+            //string locPattern = @"\w*:\w*_([0-9][0-9][0-9][0-9][0-9])";
+            //string varPattern = @"\w*:\w*_([0-9][0-9][0-9][0-9][0-9])(_(?i)DataType(?-i)=)(\w*)";
+            //string datePattern = @"\d{4}-\d{2}-\d{2}"; 
+            string locPattern = @"\w*:([0-9][0-9][0-9][0-9][0-9])";
+            string varPattern = @"\w*:([0-9][0-9][0-9][0-9][0-9])(/(?i)DataType(?-i)=)(\w*)";
             string datePattern = @"\d{4}-\d{2}-\d{2}";
 
             RegexStringValidator locValidator = new RegexStringValidator(locPattern);

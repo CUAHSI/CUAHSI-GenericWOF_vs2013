@@ -198,6 +198,10 @@ namespace WaterOneFlow.odws
                     {
                         TimeSeriesResponseType model = null;
                         string responseNwisXml = HttpUtility.HtmlDecode(USGSws.GetValues(location, variable, startDate, endDate));
+                        //System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+                        //string responseNwisXml = USGSws.GetValues(location, variable, startDate, endDate);
+                        //sw.Stop();
+                        //long time = sw.ElapsedTicks;
 
                         //string ns1Prefix = root.GetPrefixOfNamespace(ns1);
                         XNamespace ns1 = "http://www.cuahsi.org/waterML/1.1/";
@@ -296,7 +300,7 @@ namespace WaterOneFlow.odws
                                                               select new SiteInfoTypeSiteCode[] {
                                                             new SiteInfoTypeSiteCode(){
                                                             //Original value: t.Attribute("network").Value = "NWIS"
-                                                            network = "NWISDV",
+                                                            network = System.Configuration.ConfigurationManager.AppSettings["network"],
                                                             agencyCode = t.Attribute("agencyCode").Value,
                                                             Value = t.Value
                                                             }}
@@ -364,15 +368,18 @@ namespace WaterOneFlow.odws
                                                sampleMedium = "Surface Water Observation",
                                                oid = o.Attribute(ns1 + "oid").Value,
                                                valueType = o.Element(ns1 + "valueType").Value,
+
+                                               //DV
                                                dataType = o.Element(ns1 + "options").Elements(ns1 + "option").First().Value,
+
+                                               //UV
+                                               //dataType = "Instantaneous",  
 
                                                variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                                select new VariableInfoTypeVariableCode[] {
                                                                new VariableInfoTypeVariableCode(){
-                                                                   //// "NWISDV",   //t.Attribute("network").Value,
                                                                    network = System.Configuration.ConfigurationManager.AppSettings["network"], 
                                                                    variableID = int.Parse(t.Attribute("variableID").Value),
-                                                                   //"NWISDV",  // t.Attribute("vocabulary").Value,
                                                                    vocabulary = System.Configuration.ConfigurationManager.AppSettings["network"],
                                                                    Value = t.Value,
                                                                    @default = bool.Parse(t.Attribute("default").Value)
@@ -428,7 +435,8 @@ namespace WaterOneFlow.odws
                                                             {
                                                                 qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? null: t.Element(ns1+"qualifierCode").Value,
                                                                 qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? null: t.Element(ns1+"qualifierDescription").Value,
-                                                                qualifierID = int.Parse(t.Attribute("qualifierID").Value),
+                                                                //qualifierIDSpecified = true,
+                                                                //qualifierID = int.Parse(t.Attribute("qualifierID").Value)
                                                                 //network = t.Attribute("network").Value,
                                                                 //vocabulary = t.Attribute("vocabulary").Value
                                                             }).ToArray(),
@@ -437,7 +445,8 @@ namespace WaterOneFlow.odws
                                                           select new MethodType()
                                                           {
                                                             methodDescription = t.Element(ns1 + "methodDescription").IsEmpty? null: t.Element(ns1+"methodDescription").Value,
-                                                            methodID = int.Parse(t.Attribute("methodID").Value)
+                                                            //methodIDSpecified = true,
+                                                            //methodID = int.Parse(t.Attribute("methodID").Value)
                                                           }).ToArray()
 
                                           }}).FirstOrDefault();
@@ -455,16 +464,11 @@ namespace WaterOneFlow.odws
 
                             //Get DataType
                             //Assuming there is only one <option> node 
-                            string DT = null;
-                            foreach (var t in tsResp.Descendants(ns1 + "options"))
-                            {
-                                DT = t.Element(ns1 + "option").Value;
-                            }
+                            string DT;
+                            DT = varInfo.dataType;
+                                //tsResp.Elements(ns1 + "option").FirstOrDefault().IsEmpty? "Instantaneous": tsResp.Elements(ns1 + "option").FirstOrDefault().Value;
+                            response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
 
-                            if (sourceInfo.siteCode[0].network == "NWISDV")
-                            {
-                                response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
-                            } 
                         } // else
 
                         return response;

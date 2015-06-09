@@ -47,6 +47,12 @@ namespace USGSTranducer
             string siteCd = null;
             string varCd = null;
 
+            //example data
+            //location  LBR:NWISDV|00003
+            //varaible  LBR:NWISDV|00003|DataType=MAXIMUM
+            if (!location.StartsWith("NWIS", StringComparison.InvariantCultureIgnoreCase))
+                return null;
+
             if (location.Contains(separator.ToString()))
             {
                 siteCd = partsLocation[1];
@@ -64,12 +70,6 @@ namespace USGSTranducer
             {
                 varCd = partsVariable[0];
             }
-
-            //example data
-            //location  LBR:NWISDV|00003
-            //varaible  LBR:NWISDV|00003|DataType=MAXIMUM
-            if (!siteCd.StartsWith("NWIS", StringComparison.InvariantCultureIgnoreCase))
-                return null;
 
 
             UsgsParamValidator paramValidator = new UsgsParamValidator(location, variable, startDate, endDate);
@@ -102,9 +102,16 @@ namespace USGSTranducer
                 else if (endpoint.Contains("/iv/"))
                 {
                     //request USGS one year at one time
-                    responseNwis = splitRequest(endpoint,
+                    //temporially commented out 05/27/2015
+                    //responseNwis = splitRequest(endpoint,
+                    //    paramValidator.siteCd, paramValidator.varCd,
+                    //    paramValidator.startDateField, paramValidator.endDateField);
+
+                    UsgsValues usgsDV = new UsgsValues(
+                        endpoint,
                         paramValidator.siteCd, paramValidator.varCd,
                         paramValidator.startDateField, paramValidator.endDateField);
+                    responseNwis = usgsDV.GetValues();
 
                 }
             }
