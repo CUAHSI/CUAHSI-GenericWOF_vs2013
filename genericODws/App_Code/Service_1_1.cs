@@ -213,7 +213,7 @@ namespace WaterOneFlow.odws
 
                         XElement root = xDocument.Root;
                         var tsResp = root.Element(ns1 + "timeSeries");
-
+                     
                         string bDT, eDT;
                         //No matter what returns, always returns the requested DateTime
                         //if (tsResp == null)
@@ -370,7 +370,7 @@ namespace WaterOneFlow.odws
                                                valueType = o.Element(ns1 + "valueType").Value,
 
                                                //DV
-                                               dataType = o.Element(ns1 + "options").Elements(ns1 + "option").First().Value,
+                                               dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
 
                                                //UV
                                                //dataType = "Instantaneous",  
