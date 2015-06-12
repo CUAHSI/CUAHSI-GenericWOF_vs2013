@@ -370,10 +370,10 @@ namespace WaterOneFlow.odws
                                                valueType = o.Element(ns1 + "valueType").Value,
 
                                                //DV
-                                               dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
+                                               //dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
 
                                                //UV
-                                               //dataType = "Instantaneous",  
+                                               dataType = "Instantaneous",  
 
                                                variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                                select new VariableInfoTypeVariableCode[] {
@@ -390,6 +390,10 @@ namespace WaterOneFlow.odws
                                                        {
                                                            unitCode = t.Value,
 
+                                                           //Harvester requires sreies.variable.unit != null
+                                                           //unitIDSpecified = true,
+                                                           //unitID = int.Parse(t.Value),
+                                                           
                                                            //not exposed in USGS service, but required in HydroDesktop
                                                            //since HydroDesktop only select node with r.GetAttribute("unitsAbbreviation");
                                                            //    see more in HydroDesktop -> WATERML11Parser.cs

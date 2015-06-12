@@ -1355,8 +1355,11 @@ namespace WaterOneFlow.Schema.v1_1 {
         }
         
         /// <remarks/>
-        //Yaping modified from unit to units
-        [XmlElementAttribute("units")]
+        //Yaping modified from unit to units to adapt to HydroDesktop
+        //[XmlElementAttribute("units")]
+
+        //use 'unit' instead of 'units' to make Harvester work
+        [XmlElementAttribute("unit")]
         public UnitsType unit
         {
             get {
@@ -1661,7 +1664,7 @@ namespace WaterOneFlow.Schema.v1_1 {
         }
         
         /// <remarks/>
-        [XmlElementAttribute("unitsAbbreviation")]  //yaping added
+        [XmlElementAttribute("unitsAbbreviation")]  //yaping added to be compatible with HydroDesktop
         public string unitAbbreviation
         {
             get {
@@ -1684,8 +1687,10 @@ namespace WaterOneFlow.Schema.v1_1 {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int unitID {
+        /// Yaping June 12
+        //[System.Xml.Serialization.XmlAttributeAttribute()]
+        public int unitID
+        {
             get {
                 return this.unitIDField;
             }
@@ -1695,7 +1700,8 @@ namespace WaterOneFlow.Schema.v1_1 {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        /// Yaping June 12
+        //[System.Xml.Serialization.XmlIgnoreAttribute()]
         public bool unitIDSpecified {
             get {
                 return this.unitIDFieldSpecified;
