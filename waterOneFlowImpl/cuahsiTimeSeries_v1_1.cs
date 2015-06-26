@@ -1357,9 +1357,8 @@ namespace WaterOneFlow.Schema.v1_1 {
         /// <remarks/>
         //Yaping modified from unit to units to adapt to HydroDesktop
         //[XmlElementAttribute("units")]
-
         //use 'unit' instead of 'units' to make Harvester work
-        [XmlElementAttribute("unit")]
+        [XmlElementAttribute("units")]
         public UnitsType unit
         {
             get {

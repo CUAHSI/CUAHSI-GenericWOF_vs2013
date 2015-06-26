@@ -197,7 +197,8 @@ namespace WaterOneFlow.odws
                     if (useUSGSForValues)
                     {
                         TimeSeriesResponseType model = null;
-                        string responseNwisXml = HttpUtility.HtmlDecode(USGSws.GetValues(location, variable, startDate, endDate));
+                        string responseNwisXml = USGSws.GetValues(location, variable, startDate, endDate);
+                        //string responseNwisXml = HttpUtility.HtmlDecode(USGSws.GetValues(location, variable, startDate, endDate));
                         //System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
                         //string responseNwisXml = USGSws.GetValues(location, variable, startDate, endDate);
                         //sw.Stop();
@@ -370,10 +371,10 @@ namespace WaterOneFlow.odws
                                                valueType = o.Element(ns1 + "valueType").Value,
 
                                                //DV
-                                               //dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
+                                               dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
 
                                                //UV
-                                               dataType = "Instantaneous",  
+                                               //dataType = "Instantaneous",  
 
                                                variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                                select new VariableInfoTypeVariableCode[] {
@@ -439,8 +440,8 @@ namespace WaterOneFlow.odws
                                                             {
                                                                 qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? null: t.Element(ns1+"qualifierCode").Value,
                                                                 qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? null: t.Element(ns1+"qualifierDescription").Value,
-                                                                //qualifierIDSpecified = true,
-                                                                //qualifierID = int.Parse(t.Attribute("qualifierID").Value)
+                                                                qualifierIDSpecified = true,
+                                                                qualifierID = int.Parse(t.Attribute("qualifierID").Value)
                                                                 //network = t.Attribute("network").Value,
                                                                 //vocabulary = t.Attribute("vocabulary").Value
                                                             }).ToArray(),
@@ -449,8 +450,9 @@ namespace WaterOneFlow.odws
                                                           select new MethodType()
                                                           {
                                                             methodDescription = t.Element(ns1 + "methodDescription").IsEmpty? null: t.Element(ns1+"methodDescription").Value,
-                                                            //methodIDSpecified = true,
-                                                            //methodID = int.Parse(t.Attribute("methodID").Value)
+                                                            methodIDSpecified = true,
+                                                            methodID = int.Parse(t.Attribute("methodID").Value),
+                                                            methodCode = t.Attribute("methodID").Value
                                                           }).ToArray()
 
                                           }}).FirstOrDefault();
