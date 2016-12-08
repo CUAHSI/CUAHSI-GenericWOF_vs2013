@@ -23,7 +23,8 @@ namespace USGSTranducer
             statCd = _statCd;
             startDate = _startDate;
             endDate = _endDate;
-            requestUrl = "?site=" + _siteCd +
+
+           requestUrl = "?site=" + _siteCd +
                         "&parameterCd=" + _varCd +
                         "&statCd=" + _statCd +
                         "&startDT=" + _startDate.Substring(0, 10) +
@@ -37,7 +38,7 @@ namespace USGSTranducer
             varCd = _varCd;
             startDate = _startDate;
             endDate = _endDate;
-            requestUrl = "?site=" + _siteCd +
+            requestUrl = "&site=" + _siteCd +
                         "&parameterCd=" + _varCd +
                         "&startDT=" + _startDate.Substring(0, 10) +
                         "&endDT=" + _endDate.Substring(0, 10);

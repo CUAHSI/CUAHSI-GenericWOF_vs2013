@@ -205,7 +205,10 @@ namespace WaterOneFlow.odws
                         //long time = sw.ElapsedTicks;
 
                         //string ns1Prefix = root.GetPrefixOfNamespace(ns1);
-                        XNamespace ns1 = "http://www.cuahsi.org/waterML/1.1/";
+                        //WML1.2 for NWISGW, temporally hardwired, need to move to web.config
+                        //XNamespace ns1 = "http://www.cuahsi.org/waterML/1.1/";
+                        XNamespace ns1 = "http://www.cuahsi.org/waterML/1.2/";
+
                         XDocument xDocument;
                         using (TextReader xmlReader = new StringReader(responseNwisXml))
                         {
@@ -282,7 +285,8 @@ namespace WaterOneFlow.odws
                         response = CuahsiBuilder.CreateTimeSeriesObjectSingleValue(1);
                         response.queryInfo = queryInfo;
 
-                        
+                        TsValuesSingleVariableType[] values = null;
+
                         //If nothing returns in <timeSeries> node
                         if (tsResp == null)
                         {
@@ -419,12 +423,43 @@ namespace WaterOneFlow.odws
                                                noDataValue = o.Element(ns1 + "noDataValue").IsEmpty ? double.Parse("-999999.0") : double.Parse(o.Element(ns1 + "noDataValue").Value)
                                            }).FirstOrDefault();
 
-                            var values = (from o in tsResp.Elements(ns1 + "values")
-                                          select new TsValuesSingleVariableType[] {
-                                           new TsValuesSingleVariableType() 
+                            if (variable.Contains("NWISGW"))
+                            {
+                                values = (from o in tsResp.Elements(ns1 + "values")
+                                              select new TsValuesSingleVariableType[] {
+                                           new TsValuesSingleVariableType()
                                           {
                                               //ValueSingleVariable[] value
-                                              value = (from t in o.Elements(ns1+"value") 
+                                              value = (from t in o.Elements(ns1+"value")
+                                                       let dt = t.Attribute("dateTime").Value
+                                                       select new ValueSingleVariable() {
+                                                                //qualifiers = t.Attribute("qualifiers").Value,
+                                                                dateTime = new DateTime(
+                                                                int.Parse(dt.Substring(0, 4)), int.Parse(dt.Substring(5, 2)), int.Parse(dt.Substring(8,2)), 
+                                                                //UV fixed from (00:00:00)
+                                                                int.Parse(dt.Substring(11, 2)), int.Parse(dt.Substring(14, 2)), int.Parse(dt.Substring(17, 2))),
+                                                                Value = Decimal.Parse(t.Value)
+                                                       }).ToArray(),
+
+                                                method = (from t in o.Descendants(ns1 + "method")
+                                                          select new MethodType()
+                                                          {
+                                                            //methodDescription = t.Element(ns1 + "methodDescription").IsEmpty? null: t.Element(ns1+"methodDescription").Value,
+                                                            //methodIDSpecified = true,
+                                                            methodID = int.Parse(t.Attribute("methodID").Value)
+                                                            //methodCode = t.Attribute("methodID").Value
+                                                          }).ToArray()
+
+                                          }}).FirstOrDefault();
+                            }
+                            else
+                            {
+                                values = (from o in tsResp.Elements(ns1 + "values")
+                                              select new TsValuesSingleVariableType[] {
+                                           new TsValuesSingleVariableType()
+                                          {
+                                              //ValueSingleVariable[] value
+                                              value = (from t in o.Elements(ns1+"value")
                                                        let dt = t.Attribute("dateTime").Value
                                                        select new ValueSingleVariable() {
                                                                 qualifiers = t.Attribute("qualifiers").Value,
@@ -456,6 +491,7 @@ namespace WaterOneFlow.odws
                                                           }).ToArray()
 
                                           }}).FirstOrDefault();
+                            }
 
 
                             response.timeSeries[0].sourceInfo = sourceInfo;
@@ -472,8 +508,9 @@ namespace WaterOneFlow.odws
                             //Assuming there is only one <option> node 
                             string DT;
                             DT = varInfo.dataType;
-                                //tsResp.Elements(ns1 + "option").FirstOrDefault().IsEmpty? "Instantaneous": tsResp.Elements(ns1 + "option").FirstOrDefault().Value;
-                            response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
+                            //tsResp.Elements(ns1 + "option").FirstOrDefault().IsEmpty? "Instantaneous": tsResp.Elements(ns1 + "option").FirstOrDefault().Value;
+                            if (DT != String.Empty)
+                                response.timeSeries[0].variable.variableCode[0].Value = response.timeSeries[0].variable.variableCode[0].Value + "/DataType=" + DT;
 
                         } // else
 

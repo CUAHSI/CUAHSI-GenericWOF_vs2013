@@ -99,7 +99,8 @@ namespace USGSTranducer
                     responseNwis = usgsDV.GetValues();
 
                 }
-                else if (endpoint.Contains("/iv/"))
+//                else if (endpoint.Contains("/iv/"))
+                else
                 {
                     //request USGS one year at one time
                     //temporially commented out 05/27/2015
