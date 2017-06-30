@@ -206,8 +206,11 @@ namespace WaterOneFlow.odws
 
                         //string ns1Prefix = root.GetPrefixOfNamespace(ns1);
                         //WML1.2 for NWISGW, temporally hardwired, need to move to web.config
-                        //XNamespace ns1 = "http://www.cuahsi.org/waterML/1.1/";
-                        XNamespace ns1 = "http://www.cuahsi.org/waterML/1.2/";
+                        XNamespace ns1;
+                        if (variable.ToLower().Contains("nwisgw"))                          
+                            ns1 = "http://www.cuahsi.org/waterML/1.2/";
+                        else
+                            ns1 = "http://www.cuahsi.org/waterML/1.1/";
 
                         XDocument xDocument;
                         using (TextReader xmlReader = new StringReader(responseNwisXml))
@@ -219,21 +222,11 @@ namespace WaterOneFlow.odws
                         var tsResp = root.Element(ns1 + "timeSeries");
                      
                         string bDT, eDT;
-                        //No matter what returns, always returns the requested DateTime
-                        //if (tsResp == null)
-                        //{
-                            bDT = (from o in root.Descendants(ns1 + "beginDateTime")
-                                   select o.Value).FirstOrDefault().ToString();
-                            eDT = (from o in root.Descendants(ns1 + "endDateTime")
-                                   select o.Value).FirstOrDefault().ToString();
-                        //}
-                        //else
-                        //{
-                        //    bDT = (from o in root.Descendants(ns1 + "value")
-                        //           select o.Attribute("dateTime").Value).FirstOrDefault().ToString();
-                        //    eDT = (from o in root.Descendants(ns1 + "value")
-                        //           select o.Attribute("dateTime").Value).LastOrDefault().ToString();
-                        //}
+
+                        bDT = (from o in root.Descendants(ns1 + "beginDateTime")
+                                select o.Value).FirstOrDefault().ToString();
+                        eDT = (from o in root.Descendants(ns1 + "endDateTime")
+                                select o.Value).FirstOrDefault().ToString();
 
                         var queryInfo = (from o in root.Descendants(ns1 + "queryInfo")
                                          select new QueryInfoType()
@@ -370,15 +363,14 @@ namespace WaterOneFlow.odws
                                                variableDescription = o.Element(ns1 + "variableName").Value,
                                                variableName = o.Element(ns1 + "variableDescription").Value,
 
-                                               sampleMedium = "Surface Water Observation",
+                                               generalCategory = System.Configuration.ConfigurationManager.AppSettings["generalCategory"],
+                                               sampleMedium = System.Configuration.ConfigurationManager.AppSettings["sampleMedium"],
                                                oid = o.Attribute(ns1 + "oid").Value,
                                                valueType = o.Element(ns1 + "valueType").Value,
 
-                                               //DV
-                                               dataType = o.Descendants(ns1 + "option").FirstOrDefault().Value,
-
-                                               //UV
-                                               //dataType = "Instantaneous",  
+                                               dataType = variable.ToLower().Contains("nwisdv")?
+                                                    o.Descendants(ns1 + "option").FirstOrDefault().Value :
+                                                    System.Configuration.ConfigurationManager.AppSettings["dataType"],
 
                                                variableCode = (from t in o.Descendants(ns1 + "variableCode")
                                                                select new VariableInfoTypeVariableCode[] {
@@ -423,7 +415,7 @@ namespace WaterOneFlow.odws
                                                noDataValue = o.Element(ns1 + "noDataValue").IsEmpty ? double.Parse("-999999.0") : double.Parse(o.Element(ns1 + "noDataValue").Value)
                                            }).FirstOrDefault();
 
-                            if (variable.Contains("NWISGW"))
+                            if (variable.ToLower().Contains("nwisgw"))
                             {
                                 values = (from o in tsResp.Elements(ns1 + "values")
                                               select new TsValuesSingleVariableType[] {
@@ -473,8 +465,8 @@ namespace WaterOneFlow.odws
                                               qualifier =  (from t in o.Elements(ns1 + "qualifier")
                                                             select new QualifierType()
                                                             {
-                                                                qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? null: t.Element(ns1+"qualifierCode").Value,
-                                                                qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? null: t.Element(ns1+"qualifierDescription").Value,
+                                                                qualifierCode = t.Element(ns1 + "qualifierCode").IsEmpty? "-9999": t.Element(ns1+"qualifierCode").Value,
+                                                                qualifierDescription = t.Element(ns1 + "qualifierDescription").IsEmpty? "Unknown": t.Element(ns1+"qualifierDescription").Value,
                                                                 qualifierIDSpecified = true,
                                                                 qualifierID = int.Parse(t.Attribute("qualifierID").Value)
                                                                 //network = t.Attribute("network").Value,
