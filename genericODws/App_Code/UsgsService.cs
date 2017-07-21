@@ -10,6 +10,12 @@ using WaterOneFlowImpl;
 using WaterOneFlowImpl.v1_1;
 using WaterOneFlow.Schema.v1_1;
 
+using System.Xml;
+using System.Xml.Xsl;
+using System.Xml.XPath;
+using System.IO;
+using System.Net;
+
 /// <summary>
 /// Usgs service is used for getting DataValues from USGS REST API
 /// input parameters:
@@ -50,6 +56,7 @@ namespace USGSTranducer
             //example data
             //location  LBR:NWISDV|00003
             //varaible  LBR:NWISDV|00003|DataType=MAXIMUM
+            //VW_GWDP_GEOSERVER.USGS.403836085374401
             if (!location.StartsWith("NWIS", StringComparison.InvariantCultureIgnoreCase))
                 return null;
 
@@ -89,18 +96,18 @@ namespace USGSTranducer
             {
                 if (endpoint.Contains("/dv/"))
                 {
-                   string statCd = null;
-                   //Select from [USGSDataType] table. example: statCd = "00003" for "DataType=MEAN"
-                   statCd = UsgsDataType.GetStatCd(paramValidator.statName);
-                   UsgsValues usgsDV = new UsgsValues(
-                       endpoint,
-                       paramValidator.siteCd, paramValidator.varCd, statCd,
-                       paramValidator.startDateField, paramValidator.endDateField);
+                    string statCd = null;
+                    //Select from [USGSDataType] table. example: statCd = "00003" for "DataType=MEAN"
+                    statCd = UsgsDataType.GetStatCd(paramValidator.statName);
+                    UsgsValues usgsDV = new UsgsValues(
+                        endpoint,
+                        paramValidator.siteCd, paramValidator.varCd, statCd,
+                        paramValidator.startDateField, paramValidator.endDateField);
                     responseNwis = usgsDV.GetValues();
 
                 }
-//                else if (endpoint.Contains("/iv/"))
-                else
+                //                else if (endpoint.Contains("/iv/"))
+                else if (endpoint.Contains("/iv/") || endpoint.Contains("gwlevels"))
                 {
                     //request USGS one year at one time
                     //temporially commented out 05/27/2015
@@ -115,6 +122,9 @@ namespace USGSTranducer
                     responseNwis = usgsDV.GetValues();
 
                 }
+                else {
+                    log.Warn("invalid endpoint!");
+                }
             }
             catch (Exception We)
             {
@@ -124,7 +134,80 @@ namespace USGSTranducer
             return responseNwis;
         }
 
-        public string splitRequest(string endpoint, string siteCode, string paramCode, string startDT, string endDT)
+        //https://cida.usgs.gov/ngwmn_cache/sos?request=GetObservation&service=SOS&version=2.0.0&observedProperty=urn:ogc:def:property:OGC:GroundWaterLevel&responseFormat=text/xml&featureOfInterest=VW_GWDP_GEOSERVER.USGS.403836085374401
+        //https://cida.usgs.gov/ngwmn_cache/sos?request=GetFeatureOfInterest&service=SOS&version=2.0.0&bbox=30,-99,31,102&srsName=urn:ogc:def:crs:EPSG::4269
+        //C:\Users\yxiao\Documents\Visual Studio 2015\Projects\testxslt\testxslt\bin\Debug\sos2.xml
+       //Get DataValues from NGWMN GetObservation
+        public String ngwmn_GetValues(string siteCode)
+        {
+            String response = null;
+            XDocument xdocWML2, xdoc;
+
+            string xslMarkup = @"<?xml version=""1.0""?><xsl:stylesheet version = ""1.0"" xmlns:xsl = ""http://www.w3.org/1999/XSL/Transform"">
+                <xsl:template match = ""*"">
+                    <xsl:element name = ""{local-name()}"">
+                        <xsl:apply-templates select = ""@* | node()"" />
+                    </xsl:element>
+                </xsl:template>
+
+                <!-- template to copy attributes -->
+                <xsl:template match = ""@*"" >
+                    <xsl:attribute name = ""{local-name()}"" > 
+                         <xsl:value-of select = ""."" />  
+                      </xsl:attribute>
+                </xsl:template>
+
+                <!-- template to copy the rest of the nodes -->
+                <xsl:template match = ""comment() | text() | processing-instruction()"">
+                    <xsl:copy/>
+                </xsl:template>
+
+            </xsl:stylesheet>";
+
+            using (WebClient client = new WebClient())
+            {
+                client.Encoding = Encoding.UTF8;
+
+                string url = @"&service=SOS&version=2.0.0&observedProperty=urn:ogc:def:property:OGC:GroundWaterLevel&responseFormat=text/xml&featureOfInterest=";
+                url = endpoint + url + siteCode;
+                response = client.DownloadString(url);
+
+                xdocWML2 = XDocument.Parse(response);
+
+                xdoc = new XDocument();
+
+                using (System.Xml.XmlWriter writer = xdoc.CreateWriter())
+                {
+                    //Load xslt
+                    XslCompiledTransform xslt = new XslCompiledTransform();
+
+                    try
+                    {
+                        xslt.Load(XmlReader.Create(new StringReader(xslMarkup)));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    xslt.Transform(xdocWML2.CreateReader(), writer);
+                }
+
+                //Console.WriteLine(xdoc2);
+                //xdoc.Save("sos2.xml");
+            }
+
+            StringBuilder sb1 = new StringBuilder();
+            using (StringWriter sr1 = new StringWriter(sb1))
+            {
+                xdoc.Save(sr1, SaveOptions.None);
+            }
+
+            return sb1.ToString();
+        }
+
+    
+    public string splitRequest(string endpoint, string siteCode, string paramCode, string startDT, string endDT)
         {
             //split into each year
             int startYR = int.Parse(startDT.Substring(0, 4));
