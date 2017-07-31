@@ -282,6 +282,18 @@ namespace WaterOneFlow.odws
             }
 
 
+//<?xml version = "1.0" encoding="utf-8"?>
+//<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+//  <soap:Body>
+//    <GetValues xmlns = "http://www.cuahsi.org/his/1.1/ws/" >
+//      < location > ngwmn:VW_GWDP_GEOSERVER.USGS.403836085374401</location>
+//      <variable></variable>
+//      <startDate></startDate>
+//      <endDate></endDate>
+//      <authToken></authToken>
+//    </GetValues>
+//  </soap:Body>
+//</soap:Envelope>
             public TimeSeriesResponseType TimeSeriesResponseBuilder_ngwmn(string responseNwisXml, string siteCd)
             {
                 TimeSeriesResponseType response = CuahsiBuilder.CreateTimeSeriesObjectSingleValue(1);
@@ -310,11 +322,10 @@ namespace WaterOneFlow.odws
                 //"VariableUnitsName" xpath = "/GetObservationResponse/observationData/OM_Observation/result/MeasurementTimeseries/defaultPointMetadata/DefaultTVPMeasurementMetadata/uom/@code" 
                 var variableUnitsName = xDocument.Descendants("uom").FirstOrDefault().Attribute("code").Value;
 
-                //under a loop for a specified SiteCode
-                Series[] series = null;
-
                 var MeasurementTVP = xDocument.Descendants("MeasurementTVP");
 
+                //under a loop for a specified SiteCode
+                //Series[] series = null;
                 //series = (from o in MeasurementTVP
                 //          select new Series()
                 //          {
@@ -347,8 +358,8 @@ namespace WaterOneFlow.odws
                                        methodIDSpecified = false,
                                        methodID = 0
                                    }).ToArray();
-                
-                 
+
+
                 string bDT = xDocument.Element("GetObservationResponse").Element("extension").Element("temporalExtent").Element("TimePeriod").Element("beginPosition").Value;
                 string eDT = xDocument.Element("GetObservationResponse").Element("extension").Element("temporalExtent").Element("TimePeriod").Element("endPosition").Value;
 
@@ -365,6 +376,10 @@ namespace WaterOneFlow.odws
                 }
                 else
                 {
+                    //GetObservationResponse/observationData/OM_Observation/metadata/ObservationMetadata/contact/@href
+                    string sourcehref = xDocument.Element("GetObservationResponse").Element("observationData").Element("OM_Observation")
+                        .Element("metadata").Element("ObservationMetadata").Element("contact").Attribute("href").Value;
+
                     var sourceInfo = new SiteInfoType()
                                       {
                                           //siteName = ,
@@ -377,12 +392,21 @@ namespace WaterOneFlow.odws
                                                             }
                                           },
 
+                                          note = new NoteType[] {
+                                                  new NoteType()
+                                                  {
+                                                      type = "note",
+                                                      title = "sourcehref",
+                                                      Value = sourcehref
+                                                  }
+                                                }
+
                                           //timeZoneInfo = ,
 
                                           //geoLocation = ,
 
                                           //siteType = 
-                                      };
+                    };
 
                     var varInfo = new VariableInfoType()
                                    {
