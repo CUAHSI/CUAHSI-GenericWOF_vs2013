@@ -390,16 +390,16 @@ namespace WaterOneFlow.odws
                                                             //agencyCode = t.Attribute("agencyCode").Value,
                                                             Value = siteCd
                                                             }
-                                          },
+                                          }
 
-                                          note = new NoteType[] {
-                                                  new NoteType()
-                                                  {
-                                                      type = "note",
-                                                      title = "sourcehref",
-                                                      Value = sourcehref
-                                                  }
-                                                }
+                                          //note = new NoteType[] {
+                                          //        new NoteType()
+                                          //        {
+                                          //            type = "note",
+                                          //            title = "sourcehref",
+                                          //            Value = sourcehref
+                                          //        }
+                                          //      }
 
                                           //timeZoneInfo = ,
 
