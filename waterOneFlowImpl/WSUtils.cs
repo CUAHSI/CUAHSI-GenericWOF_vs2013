@@ -213,7 +213,18 @@ namespace WaterOneFlowImpl
 
                 XmlSerializer aSerializer = new XmlSerializer(objectType);
                 //aSerialize(xWriter, toSerialize);
-                aSerializer.Serialize(xWriter, toSerialize, myNamespaces);
+
+                try
+                {
+                    aSerializer.Serialize(xWriter, toSerialize, myNamespaces);
+                } catch (Exception ex)
+                {
+                    Console.WriteLine("Message: {0}", ex.Message);
+                    Console.WriteLine("Exception Type: {0}", ex.GetType().FullName);
+                    Console.WriteLine("Source: {0}", ex.Source);
+                    Console.WriteLine("StrackTrace: {0}", ex.StackTrace);
+                    Console.WriteLine("TargetSite: {0}", ex.TargetSite);
+                }
                 string xml = aWriter.ToString();
                 aWriter.Flush();
                 aWriter.Close();
