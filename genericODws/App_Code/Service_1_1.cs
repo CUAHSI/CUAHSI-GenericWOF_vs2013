@@ -334,30 +334,43 @@ namespace WaterOneFlow.odws
                 //              sourceOrg = o.Element("metadata").Element("TVPMeasurementMetadata").Element("source").Attribute("title").Value,
                 //              qclCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
                 //          }).ToArray();
-                var seriesValue = (from o in MeasurementTVP
-                          select new ValueSingleVariable()
-                          {
-                              dateTime = DateTime.Parse(o.Element("time").Value),
-                              Value = Decimal.Parse(o.Element("value").Value),
-                              qualifiers = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
-                          }).ToArray();
 
-                var seriesQualifier = (from o in MeasurementTVP
-                            select new QualifierType()
-                            {
-                                qualifierCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
-                                qualifierDescription = "unknown",
-                                qualifierIDSpecified = false
-                                //qualifierID = int.Parse(t.Attribute("qualifierID").Value)
-                            }).ToArray();
+                ValueSingleVariable[] seriesValue;
+                QualifierType[] seriesQualifier;
+                MethodType[] seriesMethod;
+                try
+                {
+                    seriesValue = (from o in MeasurementTVP
+                                       select new ValueSingleVariable()
+                                       {
+                                           dateTime = DateTime.Parse(o.Element("time").Value),
+                                           Value = Decimal.Parse(o.Element("value").Value),
+                                           qualifiers = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
+                                       }).ToArray();
 
-                var seriesMethod = (from o in MeasurementTVP
-                                   select new MethodType()
-                                   {
-                                       methodDescription = "unknown",
-                                       methodIDSpecified = false,
-                                       methodID = 0
-                                   }).ToArray();
+                    seriesQualifier = (from o in MeasurementTVP
+                                select new QualifierType()
+                                {
+                                    qualifierCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
+                                    qualifierDescription = "unknown",
+                                    qualifierIDSpecified = true,
+                                    qualifierID = 0 // int.Parse(t.Attribute("qualifierID").Value)
+                                }).ToArray();
+
+                    seriesMethod = (from o in MeasurementTVP
+                                       select new MethodType()
+                                       {
+                                           methodDescription = "unknown",
+                                           methodIDSpecified = false,
+                                           methodID = 0
+                                       }).ToArray();
+                }
+                catch (Exception e)
+                {
+                    seriesValue = null;
+                    seriesQualifier = null;
+                    seriesMethod = null;
+                }
 
 
                 string bDT = xDocument.Element("GetObservationResponse").Element("extension").Element("temporalExtent").Element("TimePeriod").Element("beginPosition").Value;
