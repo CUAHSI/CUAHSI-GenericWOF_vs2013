@@ -30,6 +30,7 @@ namespace USGSTranducer
     using System.Xml;
     using System.Text;
 
+
     public class UsgsService
     {
         static XNamespace ns = "http://www.cuahsi.org/waterML/1.1/";
@@ -140,7 +141,8 @@ namespace USGSTranducer
        //Get DataValues from NGWMN GetObservation
         public String ngwmn_GetValues(string siteCode)
         {
-            String response = null;
+            string response = null;
+            string result = null;
             XDocument xdocWML2, xdoc;
 
             string xslMarkup = @"<?xml version=""1.0""?><xsl:stylesheet version = ""1.0"" xmlns:xsl = ""http://www.w3.org/1999/XSL/Transform"">
@@ -175,7 +177,10 @@ namespace USGSTranducer
                 xdocWML2 = XDocument.Parse(response);
 
                 xdoc = new XDocument();
-
+                //XmlWriterSettings settings = new XmlWriterSettings();
+                //settings.Encoding = Encoding.UTF8;
+                //settings.ConformanceLevel = ConformanceLevel.Fragment;
+                //settings.CloseOutput = false;
                 using (System.Xml.XmlWriter writer = xdoc.CreateWriter())
                 {
                     //Load xslt
@@ -193,17 +198,8 @@ namespace USGSTranducer
                     xslt.Transform(xdocWML2.CreateReader(), writer);
                 }
 
-                //Console.WriteLine(xdoc2);
-                //xdoc.Save("sos2.xml");
+            return xdoc.ToString();
             }
-
-            StringBuilder sb1 = new StringBuilder();
-            using (StringWriter sr1 = new StringWriter(sb1))
-            {
-                xdoc.Save(sr1, SaveOptions.None);
-            }
-
-            return sb1.ToString();
         }
 
     

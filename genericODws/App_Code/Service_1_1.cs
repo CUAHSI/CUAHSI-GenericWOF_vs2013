@@ -215,6 +215,8 @@ namespace WaterOneFlow.odws
                             else siteCd = partsLocation[0];
 
                             responseNwisXml = USGSws.ngwmn_GetValues(siteCd);
+
+                            //practically, only "location" is required for the call to the original data service
                             response = TimeSeriesResponseBuilder_ngwmn(responseNwisXml, location);
                         }
                         else {
@@ -282,18 +284,6 @@ namespace WaterOneFlow.odws
             }
 
 
-//<?xml version = "1.0" encoding="utf-8"?>
-//<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-//  <soap:Body>
-//    <GetValues xmlns = "http://www.cuahsi.org/his/1.1/ws/" >
-//      < location > ngwmn:VW_GWDP_GEOSERVER.USGS.403836085374401</location>
-//      <variable></variable>
-//      <startDate></startDate>
-//      <endDate></endDate>
-//      <authToken></authToken>
-//    </GetValues>
-//  </soap:Body>
-//</soap:Envelope>
             public TimeSeriesResponseType TimeSeriesResponseBuilder_ngwmn(string responseNwisXml, string siteCd)
             {
                 TimeSeriesResponseType response = CuahsiBuilder.CreateTimeSeriesObjectSingleValue(1);
@@ -308,13 +298,12 @@ namespace WaterOneFlow.odws
                 //"VariableCode" xpath = "/GetObservationResponse/observationData/OM_Observation/result/MeasurementTimeseries/defaultPointMetadata/DefaultTVPMeasurementMetadata/uom/@title"   
                 string variableCode = xDocument.Descendants("uom").FirstOrDefault().Attribute("title").Value;
                 string vocab = "default";
-                string variableName = "Well Depth";
+                string variableName = "Water Depth";
                 string valueType = "unknown";
                 string generalCategory = "Hydrology";
                 string sampleMedium = "groundwater";
                 string sourceID = "0";
                 string QCLID = "0";
-
 
                 //"DataType" xpath = "/GetObservationResponse/observationData/OM_Observation/result/MeasurementTimeseries/defaultPointMetadata/DefaultTVPMeasurementMetadata/interpolationType/@title"
                 var datatype = xDocument.Descendants("interpolationType").FirstOrDefault().Attribute("title").Value;
@@ -325,7 +314,7 @@ namespace WaterOneFlow.odws
                 var MeasurementTVP = xDocument.Descendants("MeasurementTVP");
 
                 //under a loop for a specified SiteCode
-                //Series[] series = null;
+                Series[] series = null;
                 //series = (from o in MeasurementTVP
                 //          select new Series()
                 //          {
@@ -335,52 +324,75 @@ namespace WaterOneFlow.odws
                 //              qclCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
                 //          }).ToArray();
 
-                ValueSingleVariable[] seriesValue;
-                QualifierType[] seriesQualifier;
-                MethodType[] seriesMethod;
+                //try
+                //{
+                //    foreach (var o in MeasurementTVP)
+                //    {
+                //        DateTime outDT;
+                //        if (DateTime.TryParse(o.Element("time").Value.Substring(0, 19), out outDT)) {
+                //            var dateTime = outDT;
+                //            var value = float.Parse(o.Element("value").Value);
+
+                //        } else {
+                //            continue;
+                //        }
+                //        //var sourceOrg = o.Element("metadata").Element("TVPMeasurementMetadata").Element("source").Attribute("title").Value;
+                //        //var qclCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value;
+                //    }
+                //}
+                //catch (FormatException e)
+                //{
+                //    throw new FormatException();
+                //}
+
+                ValueSingleVariable[] seriesValue = null;
+
                 try
                 {
-                    seriesValue = (from o in MeasurementTVP
-                                       select new ValueSingleVariable()
+                    //https://stackoverflow.com/questions/15909926/linq-if-else-condition
+                    seriesValue = (from o in MeasurementTVP                                   
+                                   select new ValueSingleVariable()
                                        {
-                                           dateTime = DateTime.Parse(o.Element("time").Value),
-                                           Value = Decimal.Parse(o.Element("value").Value),
-                                           qualifiers = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
-                                       }).ToArray();
-
-                    seriesQualifier = (from o in MeasurementTVP
-                                select new QualifierType()
-                                {
-                                    qualifierCode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
-                                    qualifierDescription = "unknown",
-                                    qualifierIDSpecified = true,
-                                    qualifierID = 0 // int.Parse(t.Attribute("qualifierID").Value)
-                                }).ToArray();
-
-                    seriesMethod = (from o in MeasurementTVP
-                                       select new MethodType()
-                                       {
-                                           methodDescription = "unknown",
-                                           methodIDSpecified = false,
-                                           methodID = 0
+                                       //qualifiers = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value,
+                                       dateTime = DateTime.Parse(o.Element("time").Value.Substring(0, 19)),
+                                       Value = Decimal.Parse(o.Element("value").Value)
                                        }).ToArray();
                 }
-                catch (Exception e)
+                catch (FormatException e)
                 {
                     seriesValue = null;
-                    seriesQualifier = null;
-                    seriesMethod = null;
+                    //throw new FormatException();
                 }
+
+                var seriesQualifier = (from o in MeasurementTVP
+                                       let qcode = o.Element("metadata").Element("TVPMeasurementMetadata").Element("comment").Value
+                                       select new QualifierType()
+                                        {
+                                            qualifierCode = qcode,
+                                            qualifierDescription = "unknown",
+                                            qualifierIDSpecified = false,
+                                            //qualifierID = 0 
+                                        }).ToArray();
+
+                var seriesMethod = (from o in MeasurementTVP
+                                    select new MethodType()
+                                    {
+                                       methodCode = "0",
+                                       methodDescription = "unknown",
+                                       methodIDSpecified = true,
+                                       methodID = 0
+                                    }).ToArray();
 
 
                 string bDT = xDocument.Element("GetObservationResponse").Element("extension").Element("temporalExtent").Element("TimePeriod").Element("beginPosition").Value;
                 string eDT = xDocument.Element("GetObservationResponse").Element("extension").Element("temporalExtent").Element("TimePeriod").Element("endPosition").Value;
+                if (String.IsNullOrEmpty(bDT)) bDT = " ";
+                if (String.IsNullOrEmpty(eDT)) eDT = " ";
 
                 TsValuesSingleVariableType[] values = null;
 
                 //If nothing returns in <timeSeries> node
                 var tsResp = xDocument.Element("GetObservationResponse").Element("observationData");
-
                 if (tsResp == null)
                 {
                     response.timeSeries[0].sourceInfo = null;
@@ -403,22 +415,16 @@ namespace WaterOneFlow.odws
                                                             //agencyCode = t.Attribute("agencyCode").Value,
                                                             Value = siteCd
                                                             }
-                                          }
+                                          },
 
-                                          //note = new NoteType[] {
-                                          //        new NoteType()
-                                          //        {
-                                          //            type = "note",
-                                          //            title = "sourcehref",
-                                          //            Value = sourcehref
-                                          //        }
-                                          //      }
-
-                                          //timeZoneInfo = ,
-
-                                          //geoLocation = ,
-
-                                          //siteType = 
+                                          note = new NoteType[] {
+                                                  new NoteType()
+                                                  {
+                                                      type = "note",
+                                                      title = "sourcehref",
+                                                      Value = sourcehref
+                                                  }
+                                                }
                     };
 
                     var varInfo = new VariableInfoType()
@@ -426,12 +432,9 @@ namespace WaterOneFlow.odws
                                        //USGS data service mix these two concepts: 'variableName', and 'variableDescription'
                                        variableDescription = variableName,
                                        variableName = variableName,
-
                                        generalCategory = generalCategory,
                                        sampleMedium = sampleMedium,
-                                       //oid = o.Attribute(ns1 + "oid").Value,
                                        valueType = valueType,
-
                                        dataType = datatype,
 
                                        variableCode = new VariableInfoTypeVariableCode[] {
@@ -457,14 +460,13 @@ namespace WaterOneFlow.odws
                                            new TsValuesSingleVariableType()
                                           {
                                               value = seriesValue,
-                                              qualifier =  seriesQualifier,
+                                              qualifier = seriesQualifier,
                                               method = seriesMethod
                                           }};
 
                     response.timeSeries[0].sourceInfo = sourceInfo;
                     response.timeSeries[0].variable = varInfo;
                     response.timeSeries[0].values = values;
-                    //response.timeSeries[0].name = tsResp.Attribute("name").Value;
                 }
 
                 return response;
