@@ -1686,7 +1686,7 @@ namespace GenericGrabSampleFiles.wof11 {
         
         private string sourceIDField;
         
-        private double accuracyStdDevField;
+        private string accuracyStdDevField;
         
         private bool accuracyStdDevFieldSpecified;
         

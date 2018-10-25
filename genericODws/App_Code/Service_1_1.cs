@@ -172,7 +172,8 @@ namespace WaterOneFlow.odws
             public virtual string GetValues( string location, string variable,  string startDate, string endDate, String authToken)
             {
                 TimeSeriesResponseType aSite = GetValuesObject(location, variable, startDate, endDate, null);
-                return WSUtils.ConvertToXml(aSite, typeof(TimeSeriesResponseType));
+                var xml = WSUtils.ConvertToXml(aSite, typeof(TimeSeriesResponseType));
+                return xml;
             }
 
             public virtual TimeSeriesResponseType GetValuesObject( string location, string variable, string startDate,  string endDate, String authToken)

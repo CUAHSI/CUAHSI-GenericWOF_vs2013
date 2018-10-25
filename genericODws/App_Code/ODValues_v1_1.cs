@@ -318,10 +318,15 @@ namespace WaterOneFlow.odws
                             //{
                             //    tsTypeValue.qualityControlLevel = qlName;
                             //}
+                            //accuracy
+                            if (!aRow.IsAccuracyStdDevNull())
+                            {
+                                tsTypeValue.accuracyStdDev = aRow.AccuracyStdDev;                                
+                                
+                            }
 
-                            
-                           // tsTypeValue.sourceID = aRow.SourceID.ToString();
-                             tsTypeValue.sourceCode = aRow.SourceID.ToString();
+                            // tsTypeValue.sourceID = aRow.SourceID.ToString();
+                            tsTypeValue.sourceCode = aRow.SourceID.ToString();
 
                             if (!aRow.IsSampleIDNull())
                             {

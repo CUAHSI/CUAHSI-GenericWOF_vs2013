@@ -187,7 +187,7 @@ namespace WaterOneFlowImpl
     {
         public sealed class WSUtils : WaterOneFlowImpl.WSUtils
         {
-            public static string ConvertToXml(object toSerialize, Type objectType)
+            public static string ConvertToXml_1_1(object toSerialize, Type objectType)
             {
                 // create a string wrtiter to hold the xml string
                 // the a xml writer with the proper settings.
