@@ -64,6 +64,16 @@ namespace USGSTranducer
             request.Method = Method.ToString();
             request.ContentLength = 0;
             request.ContentType = ContentType;
+            request.AllowAutoRedirect = true;
+
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            
+            // allows for validation of SSL conversations
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+
+           
+
 
             if (!string.IsNullOrEmpty(PostData) && Method == HttpVerb.POST)
             {
