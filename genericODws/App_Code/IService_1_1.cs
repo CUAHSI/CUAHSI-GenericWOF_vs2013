@@ -63,7 +63,9 @@ namespace v1_1 {
    * */
         [SoapDocumentMethod(
        ResponseNamespace = ConstantsNs.XML_SCHEMA_NAMSPACE,
-       ResponseElementName = "TimeSeriesResponse")]  
+       //Yaping
+       //ResponseElementName = "TimeSeriesResponse")]  
+       ResponseElementName = "GetValuesObjectResponse")]  
         [WebMethod(Description = WsDescriptions.GetValuesObjectDefaultDesc)]
         TimeSeriesResponseType GetValuesObject(string location, string variable, string startDate, string endDate, String authToken);
 

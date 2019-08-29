@@ -71,6 +71,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ControlledVocabularyDataset.xsd</DependentUpon>
     </Compile>
+    <Compile Include="DataTypeDataSet.cs">
+      <DependentUpon>DataTypeDataSet.xsd</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataTypeDataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DataTypeDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs" />
     <Compile Include="SourcesDataSet_v1_1.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -128,6 +138,17 @@
     </None>
     <None Include="ControlledVocabularyDataset.xss">
       <DependentUpon>ControlledVocabularyDataset.xsd</DependentUpon>
+    </None>
+    <None Include="DataTypeDataSet.xsc">
+      <DependentUpon>DataTypeDataSet.xsd</DependentUpon>
+    </None>
+    <None Include="DataTypeDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>DataTypeDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="DataTypeDataSet.xss">
+      <DependentUpon>DataTypeDataSet.xsd</DependentUpon>
     </None>
     <None Include="SourcesDataSet_v1_1.xsc">
       <DependentUpon>SourcesDataSet_v1_1.xsd</DependentUpon>

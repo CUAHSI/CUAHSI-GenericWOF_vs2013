@@ -19,9 +19,11 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <ProjectGuid>{adfa2796-7281-42b6-8a36-a4c00b9b7951}</ProjectGuid>
     <SourceWebPhysicalPath>$(MSBuildThisFileDirectory)</SourceWebPhysicalPath>
     <SourceWebVirtualPath>/genericODws</SourceWebVirtualPath>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <SourceWebProject>C:\CODELIB\hydroserver-73826\HydroServer\WaterOneFlow\GenericOdWs_vs2010\genericODws</SourceWebProject>
-    <SourceWebMetabasePath>/IISExpress/7.5/LM/W3SVC/17/ROOT</SourceWebMetabasePath>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <SourceWebProject>
+    </SourceWebProject>
+    <SourceWebMetabasePath>
+    </SourceWebMetabasePath>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

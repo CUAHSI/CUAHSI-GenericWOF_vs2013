@@ -17,7 +17,9 @@ namespace WaterOneFlowImpl
     public class locationParam
     {
         private static String locationParamFormat = "Acceptable locationParam formats: \n Netowrk:siteCode \n GEOM:Point(X Y)\n GEOM:BOX(N W,S E) GEOM:POLYGON(X1 Y1,X2 Y2,X3 Y3,X1 Y1) \n";
-        private static String networkSeparator = ":";
+
+        private static String networkSeparator = ":"; 
+
         private static String siteIDNetwork = "BYID"; // SITEID means code is a siteID
         private String networkField;
         private Boolean isGeometryField; // is this a location that is a geometry
@@ -85,7 +87,7 @@ namespace WaterOneFlowImpl
         public locationParam(String inputParam)
         {
             location = inputParam;
-           
+
             String[] lp = new String[2];
             if (inputParam.Contains(networkSeparator))
             {
@@ -94,7 +96,7 @@ namespace WaterOneFlowImpl
                 lp[0] = inputParam.Substring(0, sepPosition).Trim();
                 lp[1] = inputParam.Substring(sepPosition + 1).Trim();
                 Network = lp[0];
-                SiteCode = lp[1].Trim();
+                SiteCode = lp[1].Trim(); 
                 if (Network.Equals(siteIDNetwork, StringComparison.InvariantCultureIgnoreCase))
                 {
                     IsId = true;
