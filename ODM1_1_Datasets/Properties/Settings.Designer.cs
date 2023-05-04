@@ -43,5 +43,26 @@ namespace WaterOneFlow.odm.v1_1.Properties {
                 return ((string)(this["LittleBear_1_1_1ConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local);Initial Catalog=OD1_1_1_YXIAO;User ID=sa;Password=cuahsi")]
+        public string OD1_1_1_YXIAOConnectionString {
+            get {
+                return ((string)(this["OD1_1_1_YXIAOConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=bhi5g2ajst.database.windows.net,1433;Initial Catalog=ODM_NwisDV;User " +
+            "ID=hiscentraladmin;Password=F@deratedResearch")]
+        public string ODDB {
+            get {
+                return ((string)(this["ODDB"]));
+            }
+        }
     }
 }

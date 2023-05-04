@@ -128,9 +128,12 @@ namespace WaterOneFlow.odws
                     }
                     else
                     {
-                        view.RowFilter = "VariableCode = '" + vParam.Code + "' ";
+                        //Yaping: adapted to be able to search "00060/DATATYPE=MEAN" etc.
+                        //view.RowFilter = "VariableCode = '" + vParam.Code + "' ";
+                        view.RowFilter = "VariableCode like '%" + vParam.Code + "%' ";
+
                         // list of possible options. Allowing any will break the query (aka QualityControlLevelID, etc)
-                        String[] options = {"samplemedium", "datatype", "valuetype"};
+                        String[] options = { "samplemedium", "datatype", "valuetype" };
 
                         foreach (string opt in options)
                         {

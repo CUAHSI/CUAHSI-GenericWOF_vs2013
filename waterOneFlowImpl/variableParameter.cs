@@ -106,9 +106,16 @@ namespace WaterOneFlowImpl
             variableOriginal = input;
             String[] s = input.Split(sep.ToCharArray());
             if (s.Length < 2)
-            {
+                {
                 throw new WaterOneFlowException("Bad Variable Parameter. Variable parameters have the form: " + variableParamForm);
             }
+
+            Code = s[0];
+            if (Code.Equals(variableIDVocabulary, StringComparison.InvariantCultureIgnoreCase))
+            {
+                IsId = true;
+            }
+
             Vocabulary = s[0];
             if (Vocabulary.Equals(variableIDVocabulary, StringComparison.InvariantCultureIgnoreCase))
             {
