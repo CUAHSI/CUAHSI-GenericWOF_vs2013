@@ -77,7 +77,6 @@
     </Compile>
     <Compile Include="DataTypeDataSet.cs">
       <DependentUpon>DataTypeDataSet.xsd</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="DataTypeDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
