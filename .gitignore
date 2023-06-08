@@ -155,10 +155,8 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 *.ide
-/.vs/genericODws/v15/Server/sqlite3/db.lock
-/.vs/genericODws/v15/Server/sqlite3/storage.ide-shm
-/.vs/genericODws/v15/Server/sqlite3/storage.ide-wal
-/.vs/genericODws
+# Visual Studio cache/options directory
+.vs
 /genericODws/App_Data/PublishProfiles
 
 # ignore connectionString
