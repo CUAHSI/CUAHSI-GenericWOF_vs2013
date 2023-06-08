@@ -159,3 +159,7 @@ $RECYCLE.BIN/
 /.vs/genericODws/v15/Server/sqlite3/storage.ide-shm
 /.vs/genericODws/v15/Server/sqlite3/storage.ide-wal
 /.vs/genericODws
+/genericODws/App_Data/PublishProfiles
+
+# ignore connectionString
+connectionString.config
